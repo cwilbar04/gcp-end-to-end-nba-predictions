@@ -1,3 +1,4 @@
 jupyter
 pytest
 pylint
+pytest-cov
