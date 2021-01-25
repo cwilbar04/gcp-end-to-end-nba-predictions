@@ -1,4 +1,4 @@
-from library import dummy
+from mylibrary import dummy
 
 def test_func():
     result = dummy.dummy_func()
