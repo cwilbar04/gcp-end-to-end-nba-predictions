@@ -6,7 +6,7 @@ install:
 		pip install -r requirements.txt
 
 test:
-	python -m pytest -vv tests/*.py
+	python -m pytest -vv --cov=library tests/*.py
 	## python -m pytest --nbval notebook.ipynb
 
 
