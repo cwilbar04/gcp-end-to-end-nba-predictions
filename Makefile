@@ -11,6 +11,6 @@ test:
 
 
 lint:
-	pylint --disable=R,C mylibrary cli web
+	pylint --disable=R,C mylibrary cli
 
 all: install lint test
