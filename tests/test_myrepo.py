@@ -6,4 +6,4 @@ def test_func():
     
 def test_subtract():
     result = dummy.subtract(5,3)
-    assert result = 2
+    assert result == 2
