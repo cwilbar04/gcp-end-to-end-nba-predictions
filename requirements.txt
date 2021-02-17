@@ -3,3 +3,9 @@ pytest
 pylint
 pytest-cov
 click
+json
+requests
+google.cloud
+uuid
+traceback
+bs4
