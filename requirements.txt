@@ -6,5 +6,4 @@ click
 requests
 google.cloud
 uuid
-traceback
 bs4
