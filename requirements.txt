@@ -3,7 +3,6 @@ pytest
 pylint
 pytest-cov
 click
-json
 requests
 google.cloud
 uuid
