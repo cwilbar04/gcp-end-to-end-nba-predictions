@@ -4,7 +4,8 @@ pylint
 pytest-cov
 click
 requests
-google.cloud
+google-cloud-firestore
+google-cloud-pubsub
+beautifulsoup4
 uuid
-bs4
 flask

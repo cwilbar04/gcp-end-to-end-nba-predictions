@@ -37,7 +37,7 @@ def  nba_basketballreference_scraper(request):
     delta = endDate - startDate       # as timedelta
     
     if delta.days < 0:
-        raise ValueError("StartDate can't be offer Begin Date")
+        raise ValueError("Start Date can't be before End Date")
     
     ##########################################################################
     # Get Distinct Months for schedule to scrape
@@ -281,22 +281,23 @@ def  nba_basketballreference_scraper(request):
                 # Save to BigQuery
                 ##########################################################################
                 
-                #print(player_game_data)
-                #print(games_data)
+                print(player_game_data)
+                print(games_data)
                 
-                replication_data = {}
-                replication_data['bq_dataset'] = 'nba' 
-                replication_data['bq_table'] = 'raw_basketballreference_playerbox'
-                replication_data['data'] = player_game_data
-                data_string = json.dumps(replication_data)  
-                future = publisher.publish(topic_path, data_string.encode("utf-8"))
+                
+               # replication_data = {}
+               # replication_data['bq_dataset'] = 'nba' 
+               # replication_data['bq_table'] = 'raw_basketballreference_playerbox'
+               # replication_data['data'] = player_game_data
+               # data_string = json.dumps(replication_data)  
+               # future = publisher.publish(topic_path, data_string.encode("utf-8"))
 
-                replication_data = {}
-                replication_data['bq_dataset'] = 'nba' 
-                replication_data['bq_table'] = 'raw_basketballreference_game'
-                replication_data['data'] = games_data
-                data_string = json.dumps(replication_data)  
-                future = publisher.publish(topic_path, data_string.encode("utf-8"))
+               # replication_data = {}
+               # replication_data['bq_dataset'] = 'nba' 
+               # replication_data['bq_table'] = 'raw_basketballreference_game'
+               # replication_data['data'] = games_data
+               # data_string = json.dumps(replication_data)  
+               # future = publisher.publish(topic_path, data_string.encode("utf-8"))
 
         return f'BasketballReference successfully scraped'
 

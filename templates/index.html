@@ -1,17 +1,17 @@
 <!doctype html>
 <html>
 <head>
-  <title>Datastore and Firebase Auth Example</title>
+  <title>NBA Teams</title>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
   <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-  <h1>Datastore and Firebase Auth Example</h1>
+  <h1>List of NBA Teams</h1>
 
-  <h2>Last 10 visits</h2>
-  {% for time in times %}
-    <p>{{ time }}</p>
+  <h2>NBA Teams</h2>
+  {% for team in teams %}
+    <p>{{ team }}</p>
   {% endfor %}
 
 </body>
