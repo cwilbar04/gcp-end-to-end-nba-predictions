@@ -7,7 +7,7 @@ import traceback
 from bs4 import BeautifulSoup, Comment
 from google.oauth2 import service_account
 import pandas as pd
-import pandas_gbq as pd_gbq
+import pandas_gbq
 
 def get_game_players(soup, player_game_data, id_string, game_key, stat_type, h_or_a, team_abbrev, game_date):
     rows = soup.find('table', id=id_string).find('tbody').find_all('tr')
@@ -376,6 +376,5 @@ def  nba_basketballreference_scraper(request):
 
         return f'BasketballReference successfully scraped'
 
-    except Exception as err:
-        err = 'Load Failed - Need better error'
-        print(err)
+    except: 
+        raise ValueError("Load Failed - Need better error")
