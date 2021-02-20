@@ -59,7 +59,7 @@ jobs:
       - run:
           name: Authorize GCloud Command Line Tool
           command: |
-            echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
+            gcloud auth activate-service-account --key-file=$GCLOUD_SERVICE_KEY
       - run:
           name: Deploy To Google Cloud Functions
           command: |
