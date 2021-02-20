@@ -12,3 +12,6 @@ GCLOUD_PROJECT_ID
 GCLOUD_SERVICE_KEY
 
 Need to setup Google Cloud Repository to Mirror Github - set this path as GLOUD_REPO
+
+Must deploy Cloud Function using UI first
+  - Show steps here
