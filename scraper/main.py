@@ -1,10 +1,10 @@
-import json
+#import json
 import os
 import requests
-from datetime import datetime, timedelta, date
-import uuid
-import traceback
-from bs4 import BeautifulSoup, Comment
+#from datetime import datetime, timedelta, date
+#import uuid
+#import traceback
+from bs4 import BeautifulSoup#, Comment
 from google.oauth2 import service_account
 import pandas as pd
 import pandas_gbq
@@ -99,14 +99,14 @@ def  nba_basketballreference_scraper(request):
             endDate = datetime.now().strftime("%Y-%m-%d") 
         else:
             endDate = datetime.strptime(request_json['EndDate'], '%Y-%m-%d').date()
-    except:
-        raise ValueError("Start & End dates must be in YYYY-MM-DD format")
+    except excption as e:
+        raise ValueError("Start & End dates must be in YYYY-MM-DD format") from e
     
     # Distinct list of Months between start and end date
     delta = endDate - startDate       # as timedelta
     
     if delta.days < 0:
-        raise ValueError("Start Date can't be before End Date")
+        raise ValueError("Start Date can't be before End Date") 
     
     ##########################################################################
     # Get Distinct Months for schedule to scrape
@@ -376,5 +376,5 @@ def  nba_basketballreference_scraper(request):
 
         return f'BasketballReference successfully scraped'
 
-    except: 
-        raise ValueError("Load Failed - Need better error")
+    except exception as e: 
+        raise ValueError("Load Failed - Need better error") from e
