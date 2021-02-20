@@ -5,3 +5,10 @@
 
 
 MSDS 434 Final Project - Cloud-native analytics application that is hosted on the Google Cloud Platform used to predict NBA scores in head to head match-ups.
+
+CircleCI needs following variables defined
+CLOUD_REPO	
+GCLOUD_PROJECT_ID	
+GCLOUD_SERVICE_KEY
+
+Need to setup Google Cloud Repository to Mirror Github - set this path as GLOUD_REPO
