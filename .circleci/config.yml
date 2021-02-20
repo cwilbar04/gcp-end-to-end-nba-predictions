@@ -75,9 +75,9 @@ workflows:
   build-test-and-deploy:
     jobs:
       - build-test
-      # - deploy:
-      #    filters:
-      #      branches:
-      #        only:
-      #          - main
+      - deploy:
+         filters:
+           branches:
+             only:
+               - main
       # need to add different workflow for CD only when change to file in specific path
