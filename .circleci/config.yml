@@ -59,7 +59,7 @@ jobs:
       - run:
           name: Authorize GCloud Command Line Tool
           command: |
-            gcloud auth activate-service-account --key-file=$GCLOUD_SERVICE_KEY
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account circleci-gcf-deployer@nba-predictions-dev.iam.gserviceaccount.com --key-file=-
       - run:
           name: Deploy To Google Cloud Functions
           command: |
