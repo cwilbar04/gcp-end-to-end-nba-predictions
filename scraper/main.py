@@ -2,19 +2,19 @@ import json
 import os
 import requests
 from datetime import datetime, timedelta, date
-from google.cloud import firestore
-from google.cloud import pubsub_v1
 import uuid
 import traceback
 from bs4 import BeautifulSoup, Comment
+from google.oauth2 import service_account
+import pandas as pd
+import pandas_gbq as pd_gbq
+
+credentials = service_account.Credentials.from_service_account_info(os.environ.get('BQUERY_ACCOUNT'))
 
 def  nba_basketballreference_scraper(request):
 
     # Config
     project_id = os.environ.get('GCP_PROJECT')
-    topic_id = "bigquery_replication_topic"
-    publisher = pubsub_v1.PublisherClient()
-    topic_path = publisher.topic_path(project_id, topic_id)
     
     ##########################################################################
     # Input Data Check
@@ -281,16 +281,22 @@ def  nba_basketballreference_scraper(request):
                 # Save to BigQuery
                 ##########################################################################
                 
-                print(player_game_data)
-                print(games_data)
+                # print(player_game_data)
+                # print(games_data)
                 
+                pandas_player_game_data = pd.DataFrame(player_game_data)
+                pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append')
+
+                pandas_games_data = pd.DataFrame(games_data)
+                pandas_gbq.to_gbq(pandas_games_data, 'nba.raw_basketballreference_game', project_id=project_id,if_exists='append')
+
                 
-               # replication_data = {}
-               # replication_data['bq_dataset'] = 'nba' 
-               # replication_data['bq_table'] = 'raw_basketballreference_playerbox'
-               # replication_data['data'] = player_game_data
-               # data_string = json.dumps(replication_data)  
-               # future = publisher.publish(topic_path, data_string.encode("utf-8"))
+            #    replication_data = {}
+            #    replication_data['bq_dataset'] = 'nba' 
+            #    replication_data['bq_table'] = 'raw_basketballreference_playerbox'
+            #    replication_data['data'] = player_game_data
+            #    data_string = json.dumps(replication_data)  
+            #    future = publisher.publish(topic_path, data_string.encode("utf-8"))
 
                # replication_data = {}
                # replication_data['bq_dataset'] = 'nba' 
