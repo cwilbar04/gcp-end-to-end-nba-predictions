@@ -73,9 +73,9 @@ workflows:
   version: 2.1
   build-test-and-deploy:
     jobs:
-      #- build-test
-      - deploy:
-          filters:
-            branches:
-              only:
-                - main
+      - build-test
+      #- deploy:
+      #    filters:
+      #      branches:
+      #        only:
+      #          - main
