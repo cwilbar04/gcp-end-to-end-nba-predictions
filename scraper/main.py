@@ -284,6 +284,8 @@ def  nba_basketballreference_scraper(request):
                 # print(player_game_data)
                 # print(games_data)
                 
+                credentials = service_account.Credentials.from_service_account_info(os.environ.get('BQUERY_ACCOUNT'))
+
                 pandas_player_game_data = pd.DataFrame(player_game_data)
                 pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append')
 
@@ -307,21 +309,21 @@ def  nba_basketballreference_scraper(request):
 
         return f'BasketballReference successfully scraped'
 
-    except Exception as e:
-        err = {}
-        err['error_key'] = str(uuid.uuid4())
-        err['error_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        err['function'] = os.environ.get('FUNCTION_NAME')
-        err['data_identifier'] = "none"
-        err['trace_back'] = str(traceback.format_exc())
-        err['message'] = str(e)
-        #err['data'] = data if data is not None else ""
-        print(err)
+    # except Exception as e:
+    #     err = {}
+    #     err['error_key'] = str(uuid.uuid4())
+    #     err['error_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    #     err['function'] = os.environ.get('FUNCTION_NAME')
+    #     err['data_identifier'] = "none"
+    #     err['trace_back'] = str(traceback.format_exc())
+    #     err['message'] = str(e)
+    #     #err['data'] = data if data is not None else ""
+    #     print(err)
         
-        topic_id_error = "error_log_topic"
-        data_string_error = json.dumps(err) 
-        topic_path_error = publisher.topic_path(project_id, topic_id_error)
-        future = publisher.publish(topic_path_error, data_string_error.encode("utf-8"))
+    #     topic_id_error = "error_log_topic"
+    #     data_string_error = json.dumps(err) 
+    #     topic_path_error = publisher.topic_path(project_id, topic_id_error)
+    #     future = publisher.publish(topic_path_error, data_string_error.encode("utf-8"))
         
 
 

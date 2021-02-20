@@ -8,6 +8,6 @@ test:
 
 
 lint:
-	pylint --disable=R,C mylibrary cli
+	pylint --disable=R,C mylibrary cli scraper tests
 
 all: install lint test
