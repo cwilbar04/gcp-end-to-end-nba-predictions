@@ -4,7 +4,7 @@
 #
 version: 2.1
 jobs:
-  build:
+  build-test:
     docker:
       # specify the version you desire here
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
@@ -78,6 +78,7 @@ workflows:
   version: 2.1
   build-test-and-deploy:
     jobs:
+      - build-test
       - deploy:
           filters:
             branches:
