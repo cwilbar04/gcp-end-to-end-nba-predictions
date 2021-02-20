@@ -3,8 +3,7 @@ pytest
 pylint
 pytest-cov
 click
-google-cloud-firestore
-google-cloud-pubsub
 beautifulsoup4
 flask
 pandas-gbq
+pandas
