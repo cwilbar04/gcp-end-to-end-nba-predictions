@@ -1,7 +1,7 @@
 #import json
 import os
 import requests
-#from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta#, date
 #import uuid
 #import traceback
 from bs4 import BeautifulSoup#, Comment
@@ -84,6 +84,7 @@ def  nba_basketballreference_scraper(request):
     # Config
     project_id = os.environ.get('GCP_PROJECT')
     credentials = service_account.Credentials.from_service_account_info(os.environ.get('BQUERY_ACCOUNT'))
+    credentials = credentials
     
     ##########################################################################
     # Input Data Check
@@ -99,7 +100,7 @@ def  nba_basketballreference_scraper(request):
             endDate = datetime.now().strftime("%Y-%m-%d") 
         else:
             endDate = datetime.strptime(request_json['EndDate'], '%Y-%m-%d').date()
-    except excption as e:
+    except Exception as e:
         raise ValueError("Start & End dates must be in YYYY-MM-DD format") from e
     
     # Distinct list of Months between start and end date
@@ -376,5 +377,5 @@ def  nba_basketballreference_scraper(request):
 
         return f'BasketballReference successfully scraped'
 
-    except exception as e: 
+    except Exception as e: 
         raise ValueError("Load Failed - Need better error") from e
