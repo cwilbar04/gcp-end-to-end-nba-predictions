@@ -65,9 +65,10 @@ jobs:
           command: |
             # Deploy command
             FUNCTION_NAME=nba_basketball_reference_scraper
+            PROJECT = $GCP_PROJECT
             gcloud functions deploy $FUNCTION_NAME \
               --source https://source.developers.google.com/projects/$GCP_PROJECT/repos/$CLOUD_REPO/moveable-aliases/main/paths/scraper \
-              --project $GCP_PROJECT
+              --project PROJECT
 
 workflows:
   version: 2.1
