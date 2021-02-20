@@ -3,9 +3,7 @@ pytest
 pylint
 pytest-cov
 click
-requests
 google-cloud-firestore
 google-cloud-pubsub
 beautifulsoup4
-uuid
 flask
