@@ -64,20 +64,21 @@ jobs:
           name: Deploy To Google Cloud Functions
           command: |
             # Variables
-            FUNCTION_NAME=circleci_deployment_example
+            FUNCTION_NAME=basketball_reference_scraper
             ENTRYPOINT=main
-            GCP_PROJECT=circleci-gcf-deployment
+            GCP_PROJECT=nba-predictions-dev
             # Deploy command
             gcloud functions deploy $FUNCTION_NAME \
               --entry-point $ENTRYPOINT \
               --runtime python37 \
               --trigger-http \
-              --source ./src/ \
+              --source ./scraper/ \
               --project $GCP_PROJECT
 workflows:
-  version: 2
+  version: 2.1
   build-test-and-deploy:
     jobs:
+      - build:
       - deploy:
           filters:
             branches:
