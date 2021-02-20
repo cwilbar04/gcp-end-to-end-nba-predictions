@@ -71,10 +71,10 @@ def get_game_players(soup, player_game_data, id_string, game_key, stat_type, h_o
     
 def get_text(stat):
     if stat is not None:
-    if stat.text != "":
-        txt = stat.text
-    else:
-        txt = None
+        if stat.text != "":
+            txt = stat.text
+        else:
+            txt = None
     else:
         txt = None
     return txt
