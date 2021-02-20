@@ -63,17 +63,10 @@ jobs:
       - run:
           name: Deploy To Google Cloud Functions
           command: |
-            # Variables
-            FUNCTION_NAME=nba_basketball_reference_scraper
-            ENTRYPOINT=nba_basketballreference_scraper
-            GCP_PROJECT=nba-predictions-dev
             # Deploy command
             gcloud functions deploy $FUNCTION_NAME \
-              --entry-point $ENTRYPOINT \
-              --runtime python38 \
-              --trigger-http \
-              --source https://source.cloud.google.com/nba-predictions-dev/github_cwilbar04_nba-predictions/+/main:scraper/ \
-              --project $GCP_PROJECT
+              --source https://source.developers.google.com/projects/$GCP_PROJECT/repos/$CLOUD_REPO/moveable-aliases/main/paths/scraper
+
 workflows:
   version: 2.1
   build-test-and-deploy:
