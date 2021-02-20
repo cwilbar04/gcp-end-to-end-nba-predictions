@@ -9,12 +9,81 @@ from google.oauth2 import service_account
 import pandas as pd
 import pandas_gbq as pd_gbq
 
-credentials = service_account.Credentials.from_service_account_info(os.environ.get('BQUERY_ACCOUNT'))
+def get_game_players(soup, player_game_data, id_string, game_key, stat_type, h_or_a, team_abbrev, game_date):
+    rows = soup.find('table', id=id_string).find('tbody').find_all('tr')
+    cnt = 1
+
+    #print(str(rows))
+    for player in rows:
+        game_players = {}
+        game_players['game_key'] = game_key
+        game_players['game_date'] = game_date
+        game_players['h_or_a'] = h_or_a
+        game_players['team_abbrev'] = team_abbrev
+        game_players['stat_period'] = stat_type
+        game_players['player'] = player.find('th',{"data-stat": "player"}).text
+        #print(game_players['player'])
+        
+        player_node = player.find('th',{"data-stat": "player"})
+        
+        # Ignore Header Line
+        if game_players['player'] != 'Reserves' and player_node.has_attr('data-append-csv'):
+        
+            a = player.find('th',{"data-stat": "player"}).find('a',href=True)
+            if a is not None:
+                game_players['player_link'] = a['href']
+            else:
+                game_players['player_link'] = None
+            
+            game_players['player_key'] = player_node['data-append-csv']
+            game_players['reason'] = get_text(player.find('td',{"data-stat": "reason"}))
+            game_players['mp'] = get_text(player.find('td',{"data-stat": "mp"}))
+            game_players['fg'] = get_text(player.find('td',{"data-stat": "fg"}))
+            game_players['fga'] = get_text(player.find('td',{"data-stat": "fga"}))
+            game_players['fg_pct'] = get_text(player.find('td',{"data-stat": "fg_pct"}))
+            game_players['fg3'] = get_text(player.find('td',{"data-stat": "fg3"}))
+            game_players['fg3a'] = get_text(player.find('td',{"data-stat": "fg3a"}))
+            game_players['fg3_pct'] = get_text(player.find('td',{"data-stat": "fg3_pct"}))
+            game_players['ft'] = get_text(player.find('td',{"data-stat": "ft"}))
+            game_players['fta'] = get_text(player.find('td',{"data-stat": "fta"}))
+            game_players['ft_pct'] = get_text(player.find('td',{"data-stat": "ft_pct"}))
+            game_players['orb'] = get_text(player.find('td',{"data-stat": "orb"}))
+            game_players['drb'] = get_text(player.find('td',{"data-stat": "drb"}))
+            game_players['trb'] = get_text(player.find('td',{"data-stat": "trb"}))
+            game_players['ast'] = get_text(player.find('td',{"data-stat": "ast"}))
+            game_players['stl'] = get_text(player.find('td',{"data-stat": "stl"}))
+            game_players['blk'] = get_text(player.find('td',{"data-stat": "blk"}))
+            game_players['tov'] = get_text(player.find('td',{"data-stat": "tov"}))
+            game_players['pf'] = get_text(player.find('td',{"data-stat": "pf"}))
+            game_players['pts'] = get_text(player.find('td',{"data-stat": "pts"}))
+            game_players['plus_minus'] = get_text(player.find('td',{"data-stat": "plus_minus"}))
+            game_players['player_stat_key'] = game_players['game_key'] + '|' + game_players['player_key'] + '|' + game_players['stat_period'] 
+            if cnt <= 5:
+                game_players['starter_flag'] = True 
+            else:
+                game_players['starter_flag'] = False
+            game_players['load_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
+            #print(game_players)
+            player_game_data.append(game_players)
+            cnt += 1
+
+    return player_game_data
+    
+def get_text(stat):
+    if stat is not None:
+    if stat.text != "":
+        txt = stat.text
+    else:
+        txt = None
+    else:
+        txt = None
+    return txt
 
 def  nba_basketballreference_scraper(request):
 
     # Config
     project_id = os.environ.get('GCP_PROJECT')
+    credentials = service_account.Credentials.from_service_account_info(os.environ.get('BQUERY_ACCOUNT'))
     
     ##########################################################################
     # Input Data Check
@@ -283,8 +352,6 @@ def  nba_basketballreference_scraper(request):
                 
                 # print(player_game_data)
                 # print(games_data)
-                
-                credentials = service_account.Credentials.from_service_account_info(os.environ.get('BQUERY_ACCOUNT'))
 
                 pandas_player_game_data = pd.DataFrame(player_game_data)
                 pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append')
@@ -309,90 +376,6 @@ def  nba_basketballreference_scraper(request):
 
         return f'BasketballReference successfully scraped'
 
-    # except Exception as e:
-    #     err = {}
-    #     err['error_key'] = str(uuid.uuid4())
-    #     err['error_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    #     err['function'] = os.environ.get('FUNCTION_NAME')
-    #     err['data_identifier'] = "none"
-    #     err['trace_back'] = str(traceback.format_exc())
-    #     err['message'] = str(e)
-    #     #err['data'] = data if data is not None else ""
-    #     print(err)
-        
-    #     topic_id_error = "error_log_topic"
-    #     data_string_error = json.dumps(err) 
-    #     topic_path_error = publisher.topic_path(project_id, topic_id_error)
-    #     future = publisher.publish(topic_path_error, data_string_error.encode("utf-8"))
-        
-
-
-def get_game_players(soup, player_game_data, id_string, game_key, stat_type, h_or_a, team_abbrev, game_date):
-    rows = soup.find('table', id=id_string).find('tbody').find_all('tr')
-    cnt = 1
-
-    #print(str(rows))
-    for player in rows:
-        game_players = {}
-        game_players['game_key'] = game_key
-        game_players['game_date'] = game_date
-        game_players['h_or_a'] = h_or_a
-        game_players['team_abbrev'] = team_abbrev
-        game_players['stat_period'] = stat_type
-        game_players['player'] = player.find('th',{"data-stat": "player"}).text
-        #print(game_players['player'])
-        
-        player_node = player.find('th',{"data-stat": "player"})
-        
-        # Ignore Header Line
-        if game_players['player'] != 'Reserves' and player_node.has_attr('data-append-csv'):
-        
-            a = player.find('th',{"data-stat": "player"}).find('a',href=True)
-            if a is not None:
-                game_players['player_link'] = a['href']
-            else:
-                game_players['player_link'] = None
-            
-            game_players['player_key'] = player_node['data-append-csv']
-            game_players['reason'] = get_text(player.find('td',{"data-stat": "reason"}))
-            game_players['mp'] = get_text(player.find('td',{"data-stat": "mp"}))
-            game_players['fg'] = get_text(player.find('td',{"data-stat": "fg"}))
-            game_players['fga'] = get_text(player.find('td',{"data-stat": "fga"}))
-            game_players['fg_pct'] = get_text(player.find('td',{"data-stat": "fg_pct"}))
-            game_players['fg3'] = get_text(player.find('td',{"data-stat": "fg3"}))
-            game_players['fg3a'] = get_text(player.find('td',{"data-stat": "fg3a"}))
-            game_players['fg3_pct'] = get_text(player.find('td',{"data-stat": "fg3_pct"}))
-            game_players['ft'] = get_text(player.find('td',{"data-stat": "ft"}))
-            game_players['fta'] = get_text(player.find('td',{"data-stat": "fta"}))
-            game_players['ft_pct'] = get_text(player.find('td',{"data-stat": "ft_pct"}))
-            game_players['orb'] = get_text(player.find('td',{"data-stat": "orb"}))
-            game_players['drb'] = get_text(player.find('td',{"data-stat": "drb"}))
-            game_players['trb'] = get_text(player.find('td',{"data-stat": "trb"}))
-            game_players['ast'] = get_text(player.find('td',{"data-stat": "ast"}))
-            game_players['stl'] = get_text(player.find('td',{"data-stat": "stl"}))
-            game_players['blk'] = get_text(player.find('td',{"data-stat": "blk"}))
-            game_players['tov'] = get_text(player.find('td',{"data-stat": "tov"}))
-            game_players['pf'] = get_text(player.find('td',{"data-stat": "pf"}))
-            game_players['pts'] = get_text(player.find('td',{"data-stat": "pts"}))
-            game_players['plus_minus'] = get_text(player.find('td',{"data-stat": "plus_minus"}))
-            game_players['player_stat_key'] = game_players['game_key'] + '|' + game_players['player_key'] + '|' + game_players['stat_period'] 
-            if cnt <= 5:
-                game_players['starter_flag'] = True 
-            else:
-                game_players['starter_flag'] = False
-            game_players['load_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
-            #print(game_players)
-            player_game_data.append(game_players)
-            cnt += 1
-
-    return player_game_data
-    
-def get_text(stat):
-    if stat is not None:
-        if stat.text != "":
-            txt = stat.text
-        else:
-            txt = None
-    else:
-        txt = None
-    return txt
+    except Exception as err:
+        err = 'Load Failed - Need better error'
+        print(err)
