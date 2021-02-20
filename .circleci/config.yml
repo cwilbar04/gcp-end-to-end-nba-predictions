@@ -67,7 +67,7 @@ jobs:
             FUNCTION_NAME=nba_basketball_reference_scraper
             gcloud functions deploy $FUNCTION_NAME \
               --source ./scraper \
-              --set-env-vars [BQUERY_ACCOUNT=$GCLOUD_BQ_SERVICE_KEY]
+              --set-env-vars [BQUERY_ACCOUNT=$GCLOUD_BQ_SERVICE_KEY] \
               --project $GCLOUD_PROJECT_ID
 
 workflows:
