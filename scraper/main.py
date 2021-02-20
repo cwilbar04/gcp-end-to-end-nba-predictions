@@ -388,6 +388,3 @@ def get_text(stat):
     else:
         txt = None
     return txt
-
-if __name__ == "__main__":
-   nba_basketballreference_scraper(request) 
