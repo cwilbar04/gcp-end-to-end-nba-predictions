@@ -84,7 +84,6 @@ def  nba_basketballreference_scraper(request):
     # Config
     project_id = os.environ.get('GCP_PROJECT')
     credentials = service_account.Credentials.from_service_account_info(os.environ.get('BQUERY_ACCOUNT'))
-    credentials = credentials
     
     ##########################################################################
     # Input Data Check
@@ -355,10 +354,10 @@ def  nba_basketballreference_scraper(request):
                 # print(games_data)
 
                 pandas_player_game_data = pd.DataFrame(player_game_data)
-                pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append')
+                pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append',credentials=credentials)
 
                 pandas_games_data = pd.DataFrame(games_data)
-                pandas_gbq.to_gbq(pandas_games_data, 'nba.raw_basketballreference_game', project_id=project_id,if_exists='append')
+                pandas_gbq.to_gbq(pandas_games_data, 'nba.raw_basketballreference_game', project_id=project_id,if_exists='append',credentials=credentials)
 
                 
             #    replication_data = {}
@@ -375,7 +374,7 @@ def  nba_basketballreference_scraper(request):
                # data_string = json.dumps(replication_data)  
                # future = publisher.publish(topic_path, data_string.encode("utf-8"))
 
-        return f'BasketballReference successfully scraped'
+        return 'BasketballReference successfully scraped'
 
     except Exception as e: 
         raise ValueError("Load Failed - Need better error") from e
