@@ -396,7 +396,7 @@ def  nba_basketballreference_scraper(request):
                     bigquery.SchemaField('visitor_team_name','STRING', 'REQUIRED'),
                     bigquery.SchemaField('away_abbr','STRING', 'REQUIRED'),
                     bigquery.SchemaField('game_date','DATE'),
-                    bigquery.SchemaField('load_datetime','TIMESTAMP')
+                    bigquery.SchemaField('load_datetime','TIMESTAMP'),
                     bigquery.SchemaField('game_start_time','TIMESTAMP')
                 ]
                 job_config.time_partitioning = bigquery.TimePartitioning(
