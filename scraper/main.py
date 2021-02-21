@@ -383,6 +383,7 @@ def  nba_basketballreference_scraper(request):
                 pandas_games_data = pd.DataFrame(games_data)
                 pandas_games_data['game_date'] = pandas_games_data['game_date'].astype('datetime64[ns]')
                 pandas_games_data['load_datetime'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
+                pandas_games_data['game_start_time'] = pandas_games_data['game_start_time'].astype('datetime64[ns]')
                 job_config = bigquery.LoadJobConfig()
                 job_config.autodetect='True'
                 job_config.create_disposition = 'CREATE_IF_NEEDED'
