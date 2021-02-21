@@ -84,7 +84,7 @@ def get_text(stat):
 def  nba_basketballreference_scraper(request):
 
     # Config
-    project_id = os.environ.get('GCP_PROJECT')
+    #project_id = os.environ.get('GCP_PROJECT')
     client = bigquery.Client()
     
     ##########################################################################
