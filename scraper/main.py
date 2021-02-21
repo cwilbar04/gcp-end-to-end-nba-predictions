@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup#, Comment
 import pandas as pd
 #import pandas_gbq
 from google.cloud import bigquery
-import pyarrow
+#import pyarrow
 
 def get_game_players(soup, player_game_data, id_string, game_key, stat_type, h_or_a, team_abbrev, game_date):
     rows = soup.find('table', id=id_string).find('tbody').find_all('tr')
