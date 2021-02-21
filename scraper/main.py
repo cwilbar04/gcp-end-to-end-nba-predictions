@@ -1,5 +1,5 @@
 #import json
-import os
+#import os
 import requests
 from datetime import datetime, timedelta#, date
 #import uuid
@@ -355,7 +355,8 @@ def  nba_basketballreference_scraper(request):
                 # print(player_game_data)
                 # print(games_data)
                 pandas_player_game_data = pd.DataFrame(player_game_data)
-                pandas_player_game_data = pandas_player_game_data.apply(pd.to_datetime,errors='ignore')
+                pandas_player_game_data['game_date'] = pandas_player_game_data['game_date'].astype('datetime64[ns]')
+                pandas_player_game_data['load_datetime'] = pandas_player_game_data['load_datetime'].astype('datetime64[ns]')
                 job_config = bigquery.LoadJobConfig()
                 job_config.autodetect='True'
                 job_config.create_disposition = 'CREATE_IF_NEEDED'
@@ -380,7 +381,8 @@ def  nba_basketballreference_scraper(request):
                 #pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append',credentials=credentials)
 
                 pandas_games_data = pd.DataFrame(games_data)
-                pandas_games_data = pandas_games_data.apply(pd.to_datetime,errors='ignore')
+                pandas_games_data['game_date'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
+                pandas_games_data['load_datetime'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
                 job_config = bigquery.LoadJobConfig()
                 job_config.autodetect='True'
                 job_config.create_disposition = 'CREATE_IF_NEEDED'
