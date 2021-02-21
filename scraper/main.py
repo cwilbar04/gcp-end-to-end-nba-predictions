@@ -367,6 +367,7 @@ def  nba_basketballreference_scraper(request):
                     bigquery.SchemaField('load_datetime','TIMESTAMP'),
                     bigquery.SchemaField('starter_flag','BOOL')
                 ]
+                 ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
                 job_config.time_partitioning = bigquery.TimePartitioning(
                     type_=bigquery.TimePartitioningType.DAY,
                     field="game_date")
@@ -388,6 +389,7 @@ def  nba_basketballreference_scraper(request):
                 job_config.autodetect='True'
                 job_config.create_disposition = 'CREATE_IF_NEEDED'
                 job_config.write_disposition = 'WRITE_APPEND'
+                ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
                 job_config.schema = [
                     bigquery.SchemaField('game_key','STRING', 'REQUIRED'),
                     bigquery.SchemaField('game_date','STRING', 'REQUIRED'),
@@ -430,4 +432,4 @@ def  nba_basketballreference_scraper(request):
         return [player_message, game_message]
 
     except Exception as e: 
-        raise ValueError("Load Failed - Need better error") from e
+        raise ValueError("Load Job Failed - Check error log for specific details") from e
