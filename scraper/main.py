@@ -5,9 +5,11 @@ from datetime import datetime, timedelta#, date
 #import uuid
 #import traceback
 from bs4 import BeautifulSoup#, Comment
-from google.oauth2 import service_account
+#from google.oauth2 import service_account
 import pandas as pd
-import pandas_gbq
+#import pandas_gbq
+from google.cloud import bigquery
+import pyarrow
 
 def get_game_players(soup, player_game_data, id_string, game_key, stat_type, h_or_a, team_abbrev, game_date):
     rows = soup.find('table', id=id_string).find('tbody').find_all('tr')
@@ -83,7 +85,7 @@ def  nba_basketballreference_scraper(request):
 
     # Config
     project_id = os.environ.get('GCP_PROJECT')
-    credentials = service_account.Credentials.from_service_account_info(os.environ.get('BQUERY_ACCOUNT'))
+    client = bigquery.Client()
     
     ##########################################################################
     # Input Data Check
@@ -352,12 +354,59 @@ def  nba_basketballreference_scraper(request):
                 
                 # print(player_game_data)
                 # print(games_data)
-
                 pandas_player_game_data = pd.DataFrame(player_game_data)
-                pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append',credentials=credentials)
+                pandas_player_game_data = pandas_player_game_data.apply(pd.to_datetime,errors='ignore')
+                job_config = bigquery.LoadJobConfig()
+                job_config.autodetect='True'
+                job_config.create_disposition = 'CREATE_IF_NEEDED'
+                job_config.write_disposition = 'WRITE_APPEND'
+                job_config.schema = [
+                    bigquery.SchemaField('player_stat_key','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('game_date','DATE'),
+                    bigquery.SchemaField('load_datetime','TIMESTAMP'),
+                    bigquery.SchemaField('starter_flag','BOOL')
+                ]
+                job_config.time_partitioning = bigquery.TimePartitioning(
+                    type_=bigquery.TimePartitioningType.DAY,
+                    field="game_date")
+                job_player = client.load_table_from_dataframe(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', job_config=job_config)
+                player_result = job_player.result()
+                player_message = (
+                    f'Job ID: {player_result.job_id} '
+                    f'was started {player_result.started} '
+                    f'and ended {player_result.ended} '
+                    f'loading {player_result.output_rows} row(s) '
+                    f'to {player_result.destination}')
+                #pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append',credentials=credentials)
 
                 pandas_games_data = pd.DataFrame(games_data)
-                pandas_gbq.to_gbq(pandas_games_data, 'nba.raw_basketballreference_game', project_id=project_id,if_exists='append',credentials=credentials)
+                pandas_games_data = pandas_games_data.apply(pd.to_datetime,errors='ignore')
+                job_config = bigquery.LoadJobConfig()
+                job_config.autodetect='True'
+                job_config.create_disposition = 'CREATE_IF_NEEDED'
+                job_config.write_disposition = 'WRITE_APPEND'
+                job_config.schema = [
+                    bigquery.SchemaField('game_key','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('game_date','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('home_team_name','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('home_abbr','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('visitor_team_name','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('away_abbr','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('game_date','DATE'),
+                    bigquery.SchemaField('load_datetime','TIMESTAMP')
+                ]
+                job_config.time_partitioning = bigquery.TimePartitioning(
+                    type_=bigquery.TimePartitioningType.DAY,
+                    field="game_date")
+                job_game = client.load_table_from_dataframe(pandas_games_data, 'nba.raw_basketballreference_game', job_config=job_config)
+                game_result = job_game.result()
+                game_message = (
+                    f'Job ID: {game_result.job_id} '
+                    f'was started {game_result.started} '
+                    f'and ended {game_result.ended} '
+                    f'loading {game_result.output_rows} row(s) '
+                    f'to {game_result.destination}')
+                #pandas_gbq.to_gbq(pandas_games_data, 'nba.raw_basketballreference_game', project_id=project_id,if_exists='append',credentials=credentials)
 
                 
             #    replication_data = {}
@@ -374,7 +423,7 @@ def  nba_basketballreference_scraper(request):
                # data_string = json.dumps(replication_data)  
                # future = publisher.publish(topic_path, data_string.encode("utf-8"))
 
-        return 'BasketballReference successfully scraped'
+        return player_message, game_message
 
     except Exception as e: 
         raise ValueError("Load Failed - Need better error") from e

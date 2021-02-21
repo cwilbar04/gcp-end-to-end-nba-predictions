@@ -1,5 +1,4 @@
-google-cloud-firestore
-google-cloud-pubsub
+google-cloud-bigquery
 beautifulsoup4
 pandas
-pandas-gbq
+pyarrow
