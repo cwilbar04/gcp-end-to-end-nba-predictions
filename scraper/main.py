@@ -381,7 +381,7 @@ def  nba_basketballreference_scraper(request):
                 #pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append',credentials=credentials)
 
                 pandas_games_data = pd.DataFrame(games_data)
-                pandas_games_data['game_date'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
+                pandas_games_data['game_date'] = pandas_games_data['game_date'].astype('datetime64[ns]')
                 pandas_games_data['load_datetime'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
                 job_config = bigquery.LoadJobConfig()
                 job_config.autodetect='True'
