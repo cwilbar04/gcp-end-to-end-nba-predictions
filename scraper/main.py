@@ -425,7 +425,7 @@ def  nba_basketballreference_scraper(request):
                # data_string = json.dumps(replication_data)  
                # future = publisher.publish(topic_path, data_string.encode("utf-8"))
 
-        return player_message, game_message
+        return [player_message, game_message]
 
     except Exception as e: 
         raise ValueError("Load Failed - Need better error") from e
