@@ -67,7 +67,15 @@ jobs:
             FUNCTION_NAME=nba_basketball_reference_scraper
             gcloud functions deploy $FUNCTION_NAME \
               --source=./scraper \
-              --project=$GCLOUD_PROJECT_ID
+              --project=$GCLOUD_PROJECT_ID \
+              --allow-unauthenticated \
+              --entry-point=nba_basketballreference_scraper \
+              --memory=1024MB \
+              --runtime=python38 \
+              --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
+              --trigger-http
+
+
 
 workflows:
   version: 2.1

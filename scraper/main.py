@@ -1,15 +1,22 @@
-#import json
-#import os
 import requests
-from datetime import datetime, timedelta#, date
-#import uuid
-#import traceback
-from bs4 import BeautifulSoup#, Comment
-#from google.oauth2 import service_account
+from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
 import pandas as pd
-#import pandas_gbq
 from google.cloud import bigquery
-#import pyarrow
+
+def get_max_game_date():
+    client = bigquery.Client()
+    
+    QUERY = (
+    "SELECT date_add(max(game_date), INTERVAL 1 day) as max_game_date FROM `nba.raw_basketballreference_game`"
+    )
+    query_job = client.query(QUERY)  # API request
+    rows = query_job.result()  # Waits for query to finish
+    
+    for result in rows:
+        load_date = result.max_game_date
+    
+    return load_date
 
 def get_game_players(soup, player_game_data, id_string, game_key, stat_type, h_or_a, team_abbrev, game_date):
     rows = soup.find('table', id=id_string).find('tbody').find_all('tr')
@@ -70,7 +77,7 @@ def get_game_players(soup, player_game_data, id_string, game_key, stat_type, h_o
             cnt += 1
 
     return player_game_data
-    
+   
 def get_text(stat):
     if stat is not None:
         if stat.text != "":
@@ -82,9 +89,8 @@ def get_text(stat):
     return txt
 
 def  nba_basketballreference_scraper(request):
-
+   
     # Config
-    #project_id = os.environ.get('GCP_PROJECT')
     client = bigquery.Client()
     
     ##########################################################################
@@ -94,7 +100,7 @@ def  nba_basketballreference_scraper(request):
     try:
         request_json = request.get_json()
         if request_json and 'StartDate' not in request_json:  
-            startDate = datetime.now().strftime("%Y-%m-%d")
+            startDate = get_max_game_date().strftime("%Y-%m-%d")
         else:
             startDate = datetime.strptime(request_json['StartDate'], '%Y-%m-%d').date()
         if request_json and 'EndDate' not in request_json:  
@@ -123,24 +129,33 @@ def  nba_basketballreference_scraper(request):
             r['year'] = day.year + 1
         else:
             r['year'] = day.year
-        if r not in yearmonths and (day.month not in [7,8,9] or day.year == 2020): 
+        if r not in yearmonths: 
             yearmonths.append(r)
     #print(yearmonths)
     
     ##########################################################################
     # Scrape Schedule
     ##########################################################################
+    player_game_rows_loaded = 0
+    game_rows_loaded = 0
     
     try:
 
         schedule = []
         for v in yearmonths:
-            url = 'https://www.basketball-reference.com/leagues/NBA_' + str(v['year']) + '_games-' + v['monthname'] + '.html'
+            year = str(v['year'])
+            month = v['monthname']
+            url = 'https://www.basketball-reference.com/leagues/NBA_' + year + '_games-' + month + '.html'
             #print(url)
         
-            r = requests.get(url)
-        
-            soup = BeautifulSoup(r.content, 'html.parser')
+            html = requests.get(url)
+            
+            if html.ok:
+                soup = BeautifulSoup(html.content, 'html.parser')  
+            else:
+                print(f'No data for {month} {year} because enountered error code {html.status_code}')
+                continue
+
             rows = soup.find('table', id="schedule").find('tbody').find_all('tr')
             #print(rows)
             
@@ -159,277 +174,265 @@ def  nba_basketballreference_scraper(request):
                         r['game_date'] = datetime.strptime(v1.text, '%a, %b %d, %Y').strftime("%Y-%m-%d")
                         
                         v2 = row.find('td',{"data-stat": "game_start_time"})
-                        r['game_start_time'] = v2.text if v2.text != "" else None
+                        r['game_start_time'] = v2.text if v2 else None
                         
                         v3 = row.find('td',{"data-stat": "visitor_team_name"})
                         r['visitor_team_name'] = v3.text
                         r['away_abbr'] = v3['csk'].split('.')[0]
                         
                         v4 = row.find('td',{"data-stat": "visitor_pts"})
-                        r['visitor_pts'] = v4.text if v4.text != "" else None
+                        r['visitor_pts'] = v4.text if v4 else None
                         
                         v5 = row.find('td',{"data-stat": "home_team_name"})
                         r['home_team_name'] = v5.text
                         r['home_abbr'] = v5['csk'].split('.')[0]
                         
                         v6 = row.find('td',{"data-stat": "home_pts"})
-                        r['home_pts'] = v6.text if v6.text != "" else None
+                        r['home_pts'] = v6.text if v6 else None
                         
                         v7 = row.find('td',{"data-stat": "box_score_text"}).find('a',href=True)
-                        if v7 is not None:
-                            r['box_score_url'] = v7['href']
-                        else:
-                            r['box_score_url'] = None
+                        r['box_score_url'] = v7['href'] if v7 else None
                             
                         v8 = row.find('td',{"data-stat": "attendance"})
-                        r['attendance'] = v8.text if v8.text != "" else None
+                        r['attendance'] = v8.text if v8 else None
                         
                         v9 = row.find('td',{"data-stat": "overtimes"})
-                        r['overtimes'] = v9.text if v9.text != "" else None
+                        r['overtimes'] = v9.text if v9 else None
                         
-            
-                        v12 = r['away_abbr'] + r['game_date'].replace('-','') + r['home_abbr'] + r['game_start_time'].replace(':','')
-                        r['game_key'] = v12 if v12 != "" else None
+                        if r['game_start_time']:
+                            v12 = r['away_abbr'] + r['game_date'].replace('-','') + r['home_abbr'] + r['game_start_time'].replace(':','')
+                        else:
+                            v12 = r['away_abbr'] + r['game_date'].replace('-','') + r['home_abbr']
+                        r['game_key'] = v12 if v12 else None
                     
-                        #r[k].append(v)
-                        #.append()
-                        #r = {k:v}
                         schedule.append(r)
-        #print(schedule)            
+            #print(schedule)            
         
-        ##########################################################################
-        # Scrape Games in Schedule
-        ##########################################################################
-        
-        for game in schedule:
-            if 'box_score_url' in game and game['box_score_url'] != "" and game['box_score_url'] is not None:
-                
-                games_data = []
-                player_game_data = []
-                url = "https://www.basketball-reference.com" + game['box_score_url']
-                
-                #print(url)
-                r = requests.get(url)
-                #print('here2')
-                soup = BeautifulSoup(str(r.content).replace("<!--","").replace('-->',''), 'html.parser')
-                
-                ##############################################
-                # Line Score
-                rows = soup.find('table', id="line_score").find_all('tr')
-                
-                # Away Line Score
-                r_num = 1
-                for away in rows[2].find_all('td'):
-                    test_strong = away.find('strong') # Strong represents the total score ... ignore
-                    if test_strong is None: #and r_num > 0
-                        k='a_g' + str(r_num) + '_score'
-                        game[k] = away.text if away.text != "" else None
-                    r_num+=1
-                    
-                # Home Line Score
-                r_num = 1
-                for home in rows[3].find_all('td'):
-                    test_strong = home.find('strong') # Strong represents the total score ... ignore
-                    if test_strong is None: #and r_num > 0
-                        k='h_g' + str(r_num) + '_score'
-                        game[k] = home.text if home.text != "" else None
-                    r_num+=1    
-                        
-                ##############################################
-                # Four Facts
-                rows = soup.find('table', id="four_factors").find_all('tr')
-                
-                # Away Four Factors
-                game['a_ff_pace'] = rows[2].find('td',{"data-stat": "pace"}).text
-                game['a_ff_efg_pct'] = rows[2].find('td',{"data-stat": "efg_pct"}).text
-                game['a_ff_tov_pct'] = rows[2].find('td',{"data-stat": "tov_pct"}).text
-                game['a_ff_orb_pct'] = rows[2].find('td',{"data-stat": "orb_pct"}).text
-                game['a_ff_ft_rate'] = rows[2].find('td',{"data-stat": "ft_rate"}).text
-                game['a_ff_off_rtg'] = rows[2].find('td',{"data-stat": "off_rtg"}).text
-                
-                # Home Four Factors
-                game['h_ff_pace'] = rows[3].find('td',{"data-stat": "pace"}).text
-                game['h_ff_efg_pct'] = rows[3].find('td',{"data-stat": "efg_pct"}).text
-                game['h_ff_tov_pct'] = rows[3].find('td',{"data-stat": "tov_pct"}).text
-                game['h_ff_orb_pct'] = rows[3].find('td',{"data-stat": "orb_pct"}).text
-                game['h_ff_ft_rate'] = rows[3].find('td',{"data-stat": "ft_rate"}).text
-                game['h_ff_off_rtg'] = rows[3].find('td',{"data-stat": "off_rtg"}).text
-                game['load_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")        
-                
-                #now = datetime.now() # current date and time
-                #now.strftime("%m/%d/%Y, %H:%M:%S")
-                
-                
-                #player_game_data = []
-                game_date = game['game_date']
-                
-                ##############################################
-                # Game Box - Home
-                #box-WAS-q1-basic
-                stat_type = "game"
-                h_or_a = "h"
-                team_abbrev = game['home_abbr']
-                id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                ##############################################
-                # Game Box - Away
-                #box-WAS-q1-basic
-                stat_type = "game"
-                h_or_a = "a"
-                team_abbrev = game['away_abbr']
-                id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                ##############################################
-                # Q1 Box - Home
-                stat_type = "q1"
-                h_or_a = "h"
-                team_abbrev = game['home_abbr']
-                id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                ##############################################
-                # Q1 Box - Away
-                stat_type = "q1"
-                h_or_a = "a"
-                team_abbrev = game['away_abbr']
-                id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                ##############################################
-                # Q2 Box - Home
-                stat_type = "q2"
-                h_or_a = "h"
-                team_abbrev = game['home_abbr']
-                id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                ##############################################
-                # Q2 Box - Away
-                stat_type = "q2"
-                h_or_a = "a"
-                team_abbrev = game['away_abbr']
-                id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                ##############################################
-                # Q3 Box - Home
-                stat_type = "q3"
-                h_or_a = "h"
-                team_abbrev = game['home_abbr']
-                id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                ##############################################
-                # Q3 Box - Away
-                stat_type = "q3"
-                h_or_a = "a"
-                team_abbrev = game['away_abbr']
-                id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                ##############################################
-                # Q4 Box - Home
-                stat_type = "q4"
-                h_or_a = "h"
-                team_abbrev = game['home_abbr']
-                id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                ##############################################
-                # Q4 Box - Away
-                stat_type = "q4"
-                h_or_a = "a"
-                team_abbrev = game['away_abbr']
-                id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
-                player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
-                
-                games_data.append(game)
-                
-        
-                ##########################################################################
-                # Save to BigQuery
-                ##########################################################################
-                
-                # print(player_game_data)
-                # print(games_data)
-                pandas_player_game_data = pd.DataFrame(player_game_data)
-                pandas_player_game_data['game_date'] = pandas_player_game_data['game_date'].astype('datetime64[ns]')
-                pandas_player_game_data['load_datetime'] = pandas_player_game_data['load_datetime'].astype('datetime64[ns]')
-                job_config = bigquery.LoadJobConfig()
-                job_config.autodetect='True'
-                job_config.create_disposition = 'CREATE_IF_NEEDED'
-                job_config.write_disposition = 'WRITE_APPEND'
-                job_config.schema = [
-                    bigquery.SchemaField('player_stat_key','STRING', 'REQUIRED'),
-                    bigquery.SchemaField('game_date','DATE'),
-                    bigquery.SchemaField('load_datetime','TIMESTAMP'),
-                    bigquery.SchemaField('starter_flag','BOOL')
-                ]
-                 ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
-                job_config.time_partitioning = bigquery.TimePartitioning(
-                    type_=bigquery.TimePartitioningType.DAY,
-                    field="game_date")
-                job_player = client.load_table_from_dataframe(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', job_config=job_config)
-                player_result = job_player.result()
-                player_message = (
-                    f'Job ID: {player_result.job_id} '
-                    f'was started {player_result.started} '
-                    f'and ended {player_result.ended} '
-                    f'loading {player_result.output_rows} row(s) '
-                    f'to {player_result.destination}')
-                #pandas_gbq.to_gbq(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', project_id=project_id,if_exists='append',credentials=credentials)
+            ##########################################################################
+            # Scrape Games in Schedule
+            ##########################################################################
+            games_data = []
+            player_game_data = []
 
-                pandas_games_data = pd.DataFrame(games_data)
-                pandas_games_data['game_date'] = pandas_games_data['game_date'].astype('datetime64[ns]')
-                pandas_games_data['load_datetime'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
-                pandas_games_data['game_start_time'] = pandas_games_data['game_start_time'].astype('datetime64[ns]')
-                job_config = bigquery.LoadJobConfig()
-                job_config.autodetect='True'
-                job_config.create_disposition = 'CREATE_IF_NEEDED'
-                job_config.write_disposition = 'WRITE_APPEND'
-                ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
-                job_config.schema = [
-                    bigquery.SchemaField('game_key','STRING', 'REQUIRED'),
-                    bigquery.SchemaField('game_date','STRING', 'REQUIRED'),
-                    bigquery.SchemaField('home_team_name','STRING', 'REQUIRED'),
-                    bigquery.SchemaField('home_abbr','STRING', 'REQUIRED'),
-                    bigquery.SchemaField('visitor_team_name','STRING', 'REQUIRED'),
-                    bigquery.SchemaField('away_abbr','STRING', 'REQUIRED'),
-                    bigquery.SchemaField('game_date','DATE'),
-                    bigquery.SchemaField('load_datetime','TIMESTAMP'),
-                    bigquery.SchemaField('game_start_time','TIMESTAMP')
-                ]
-                job_config.time_partitioning = bigquery.TimePartitioning(
-                    type_=bigquery.TimePartitioningType.DAY,
-                    field="game_date")
-                job_game = client.load_table_from_dataframe(pandas_games_data, 'nba.raw_basketballreference_game', job_config=job_config)
-                game_result = job_game.result()
-                game_message = (
-                    f'Job ID: {game_result.job_id} '
-                    f'was started {game_result.started} '
-                    f'and ended {game_result.ended} '
-                    f'loading {game_result.output_rows} row(s) '
-                    f'to {game_result.destination}')
-                #pandas_gbq.to_gbq(pandas_games_data, 'nba.raw_basketballreference_game', project_id=project_id,if_exists='append',credentials=credentials)
+            for game in schedule:
+                if 'box_score_url' in game and game['box_score_url'] != "" and game['box_score_url'] is not None:
 
-                
-            #    replication_data = {}
-            #    replication_data['bq_dataset'] = 'nba' 
-            #    replication_data['bq_table'] = 'raw_basketballreference_playerbox'
-            #    replication_data['data'] = player_game_data
-            #    data_string = json.dumps(replication_data)  
-            #    future = publisher.publish(topic_path, data_string.encode("utf-8"))
 
-               # replication_data = {}
-               # replication_data['bq_dataset'] = 'nba' 
-               # replication_data['bq_table'] = 'raw_basketballreference_game'
-               # replication_data['data'] = games_data
-               # data_string = json.dumps(replication_data)  
-               # future = publisher.publish(topic_path, data_string.encode("utf-8"))
+                    url = "https://www.basketball-reference.com" + game['box_score_url']
 
-        return [player_message, game_message]
+                    #print(url)
+                    r = requests.get(url)
+                    #print('here2')
+                    soup = BeautifulSoup(str(r.content).replace("<!--","").replace('-->',''), 'html.parser')
+
+                    ##############################################
+                    # Line Score
+                    rows = soup.find('table', id="line_score").find_all('tr')
+
+                    # Away Line Score
+                    r_num = 1
+                    for away in rows[2].find_all('td'):
+                        test_strong = away.find('strong') # Strong represents the total score ... ignore
+                        if test_strong is None: #and r_num > 0
+                            k='a_g' + str(r_num) + '_score'
+                            game[k] = away.text if away.text != "" else None
+                        r_num+=1
+
+                    # Home Line Score
+                    r_num = 1
+                    for home in rows[3].find_all('td'):
+                        test_strong = home.find('strong') # Strong represents the total score ... ignore
+                        if test_strong is None: #and r_num > 0
+                            k='h_g' + str(r_num) + '_score'
+                            game[k] = home.text if home.text != "" else None
+                        r_num+=1    
+
+                    ##############################################
+                    # Four Facts
+                    rows = soup.find('table', id="four_factors").find_all('tr')
+
+                    # Away Four Factors
+                    game['a_ff_pace'] = rows[2].find('td',{"data-stat": "pace"}).text
+                    game['a_ff_efg_pct'] = rows[2].find('td',{"data-stat": "efg_pct"}).text
+                    game['a_ff_tov_pct'] = rows[2].find('td',{"data-stat": "tov_pct"}).text
+                    game['a_ff_orb_pct'] = rows[2].find('td',{"data-stat": "orb_pct"}).text
+                    game['a_ff_ft_rate'] = rows[2].find('td',{"data-stat": "ft_rate"}).text
+                    game['a_ff_off_rtg'] = rows[2].find('td',{"data-stat": "off_rtg"}).text
+
+                    # Home Four Factors
+                    game['h_ff_pace'] = rows[3].find('td',{"data-stat": "pace"}).text
+                    game['h_ff_efg_pct'] = rows[3].find('td',{"data-stat": "efg_pct"}).text
+                    game['h_ff_tov_pct'] = rows[3].find('td',{"data-stat": "tov_pct"}).text
+                    game['h_ff_orb_pct'] = rows[3].find('td',{"data-stat": "orb_pct"}).text
+                    game['h_ff_ft_rate'] = rows[3].find('td',{"data-stat": "ft_rate"}).text
+                    game['h_ff_off_rtg'] = rows[3].find('td',{"data-stat": "off_rtg"}).text
+                    game['load_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")        
+
+                    #now = datetime.now() # current date and time
+                    #now.strftime("%m/%d/%Y, %H:%M:%S")
+
+
+                    #player_game_data = []
+                    game_date = game['game_date']
+
+                    ##############################################
+                    # Game Box - Home
+                    #box-WAS-q1-basic
+                    stat_type = "game"
+                    h_or_a = "h"
+                    team_abbrev = game['home_abbr']
+                    id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    ##############################################
+                    # Game Box - Away
+                    #box-WAS-q1-basic
+                    stat_type = "game"
+                    h_or_a = "a"
+                    team_abbrev = game['away_abbr']
+                    id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    ##############################################
+                    # Q1 Box - Home
+                    stat_type = "q1"
+                    h_or_a = "h"
+                    team_abbrev = game['home_abbr']
+                    id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    ##############################################
+                    # Q1 Box - Away
+                    stat_type = "q1"
+                    h_or_a = "a"
+                    team_abbrev = game['away_abbr']
+                    id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    ##############################################
+                    # Q2 Box - Home
+                    stat_type = "q2"
+                    h_or_a = "h"
+                    team_abbrev = game['home_abbr']
+                    id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    ##############################################
+                    # Q2 Box - Away
+                    stat_type = "q2"
+                    h_or_a = "a"
+                    team_abbrev = game['away_abbr']
+                    id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    ##############################################
+                    # Q3 Box - Home
+                    stat_type = "q3"
+                    h_or_a = "h"
+                    team_abbrev = game['home_abbr']
+                    id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    ##############################################
+                    # Q3 Box - Away
+                    stat_type = "q3"
+                    h_or_a = "a"
+                    team_abbrev = game['away_abbr']
+                    id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    ##############################################
+                    # Q4 Box - Home
+                    stat_type = "q4"
+                    h_or_a = "h"
+                    team_abbrev = game['home_abbr']
+                    id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    ##############################################
+                    # Q4 Box - Away
+                    stat_type = "q4"
+                    h_or_a = "a"
+                    team_abbrev = game['away_abbr']
+                    id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
+                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+
+                    games_data.append(game)
+
+
+            ##########################################################################
+            # Save to BigQuery
+            ##########################################################################
+
+            # print(player_game_data)
+            # print(games_data)
+
+            print(f'Loading data for {month} {year}')
+            #player game data
+            pandas_player_game_data = pd.DataFrame(player_game_data)
+            pandas_player_game_data['game_date'] = pandas_player_game_data['game_date'].astype('datetime64[ns]')
+            pandas_player_game_data['load_datetime'] = pandas_player_game_data['load_datetime'].astype('datetime64[ns]')
+            job_config = bigquery.LoadJobConfig()
+            job_config.autodetect='True'
+            job_config.create_disposition = 'CREATE_IF_NEEDED'
+            job_config.write_disposition = 'WRITE_APPEND'
+             ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
+            job_config.schema = [
+                bigquery.SchemaField('player_stat_key','STRING', 'REQUIRED'),
+                bigquery.SchemaField('game_date','DATE'),
+                bigquery.SchemaField('load_datetime','TIMESTAMP'),
+                bigquery.SchemaField('starter_flag','BOOL')
+            ]
+            job_config.time_partitioning = bigquery.TimePartitioning(
+                type_=bigquery.TimePartitioningType.DAY,
+                field="game_date")
+            job_player = client.load_table_from_dataframe(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', job_config=job_config)
+            player_result = job_player.result()
+            player_message = (
+                f'Job ID: {player_result.job_id} '
+                f'was started {player_result.started} '
+                f'and ended {player_result.ended} '
+                f'loading {player_result.output_rows} row(s) '
+                f'to {player_result.destination}')
+            print(player_message)
+            player_game_rows_loaded = player_game_rows_loaded + player_result.output_rows
+
+            #game data
+            pandas_games_data = pd.DataFrame(games_data)
+            pandas_games_data['game_date'] = pandas_games_data['game_date'].astype('datetime64[ns]')
+            pandas_games_data['load_datetime'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
+            pandas_games_data['game_start_time'] = pandas_games_data['game_start_time'].astype('datetime64[ns]')
+            job_config = bigquery.LoadJobConfig()
+            job_config.autodetect='True'
+            job_config.create_disposition = 'CREATE_IF_NEEDED'
+            job_config.write_disposition = 'WRITE_APPEND'
+            ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
+            job_config.schema = [
+                bigquery.SchemaField('game_key','STRING', 'REQUIRED'),
+                bigquery.SchemaField('game_date','STRING', 'REQUIRED'),
+                bigquery.SchemaField('home_team_name','STRING', 'REQUIRED'),
+                bigquery.SchemaField('home_abbr','STRING', 'REQUIRED'),
+                bigquery.SchemaField('visitor_team_name','STRING', 'REQUIRED'),
+                bigquery.SchemaField('away_abbr','STRING', 'REQUIRED'),
+                bigquery.SchemaField('game_date','DATE'),
+                bigquery.SchemaField('load_datetime','TIMESTAMP'),
+                bigquery.SchemaField('game_start_time','TIMESTAMP')
+            ]
+            job_config.time_partitioning = bigquery.TimePartitioning(
+                type_=bigquery.TimePartitioningType.DAY,
+                field="game_date")
+            job_game = client.load_table_from_dataframe(pandas_games_data, 'nba.raw_basketballreference_game', job_config=job_config)
+            game_result = job_game.result()
+            game_message = (
+                f'Job ID: {game_result.job_id} '
+                f'was started {game_result.started} '
+                f'and ended {game_result.ended} '
+                f'loading {game_result.output_rows} row(s) '
+                f'to {game_result.destination}')
+            print(game_message)
+            game_rows_loaded = game_rows_loaded + game_result.output_rows
+
+        return f'Successfully loaded {player_game_rows_loaded} row(s) to raw_basketballreference_playerbox and {game_rows_loaded} to raw_basketballreference_game'
 
     except Exception as e: 
         raise ValueError("Load Job Failed - Check error log for specific details") from e
