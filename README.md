@@ -6,6 +6,14 @@
 
 MSDS 434 Final Project - Cloud-native analytics application that is hosted on the Google Cloud Platform used to predict NBA scores in head to head match-ups.
 
+Account that runs Google Cloud Function must have:
+  Project - Editor
+  BigQuery Data Editor
+  Cloud Run Service Agent
+
+  BigQuery Edit permissions
+
+
 CircleCI needs following variables defined
 CLOUD_REPO	
 GCLOUD_PROJECT_ID	
