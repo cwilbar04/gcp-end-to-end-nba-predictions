@@ -76,7 +76,10 @@ jobs:
               --trigger-http \
               --timeout=300
 
-            gcloud functions add-iam-policy-binding nba_basketball_reference_scraper  --member=allUsers --role=roles/cloudfunctions.invoker
+            gcloud functions add-iam-policy-binding nba_basketball_reference_scraper \
+              --member=allUsers \
+              --role=roles/cloudfunctions.invoker \
+              --project=$GCLOUD_PROJECT_ID
 
 
 
