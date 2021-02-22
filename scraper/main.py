@@ -102,14 +102,14 @@ def  nba_basketballreference_scraper(request):
 
     try:
         request_json = request.get_json()
-        if request_json and 'StartDate' not in request_json:  
+        if request_json and 'StartDate' in request_json:  
+            startDate = datetime.strptime(request_json['StartDate'], '%Y-%m-%d').date()            
+        else:
             startDate = get_max_game_date()
+        if request_json and 'EndDate' in request_json:  
+            endDate = datetime.strptime(request_json['EndDate'], '%Y-%m-%d').date() 
         else:
-            startDate = datetime.strptime(request_json['StartDate'], '%Y-%m-%d').date()
-        if request_json and 'EndDate' not in request_json:  
             endDate = (datetime.now() + timedelta(days=-1)).date()
-        else:
-            endDate = datetime.strptime(request_json['EndDate'], '%Y-%m-%d').date()
     except Exception as e:
         raise ValueError("Start & End dates must be in YYYY-MM-DD format") from e
 
