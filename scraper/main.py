@@ -361,6 +361,13 @@ def  nba_basketballreference_scraper(request):
 
 
             ##########################################################################
+            # Check for empty game data
+            ##########################################################################
+            # Continue to next month if there were no games in the month starting at the start date
+            if not games_data:
+                continue
+
+            ##########################################################################
             # Save to BigQuery
             ##########################################################################
 
