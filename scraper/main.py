@@ -100,11 +100,11 @@ def  nba_basketballreference_scraper(request):
     try:
         request_json = request.get_json()
         if request_json and 'StartDate' not in request_json:  
-            startDate = get_max_game_date().strftime("%Y-%m-%d")
+            startDate = get_max_game_date().strftime("%Y-%m-%d").date()
         else:
             startDate = datetime.strptime(request_json['StartDate'], '%Y-%m-%d').date()
         if request_json and 'EndDate' not in request_json:  
-            endDate = datetime.now().strftime("%Y-%m-%d") 
+            endDate = datetime.now().strftime("%Y-%m-%d").date() 
         else:
             endDate = datetime.strptime(request_json['EndDate'], '%Y-%m-%d').date()
     except Exception as e:
