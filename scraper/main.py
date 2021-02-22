@@ -236,7 +236,7 @@ def  nba_basketballreference_scraper(request):
                     r_num = 1
                     for away in rows[2].find_all('td'):
                         test_strong = away.find('strong') # Strong represents the total score ... ignore
-                        if test_strong is None: #and r_num > 0
+                        if test_strong is None and r_num < 7:
                             k='a_g' + str(r_num) + '_score'
                             game[k] = away.text if away.text != "" else None
                         r_num+=1
@@ -245,10 +245,10 @@ def  nba_basketballreference_scraper(request):
                     r_num = 1
                     for home in rows[3].find_all('td'):
                         test_strong = home.find('strong') # Strong represents the total score ... ignore
-                        if test_strong is None: #and r_num > 0
+                        if test_strong is None and r_num < 7:
                             k='h_g' + str(r_num) + '_score'
                             game[k] = home.text if home.text != "" else None
-                        r_num+=1    
+                        r_num+=1      
 
                     ##############################################
                     # Four Facts
