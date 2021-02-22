@@ -98,23 +98,23 @@ def  nba_basketballreference_scraper(request):
     ##########################################################################
     
     try:
-        request_json = request.get_json()
+        request_json = {"Type":"Scheduler"}
         if request_json and 'StartDate' not in request_json:  
-            startDate = get_max_game_date().strftime("%Y-%m-%d").date()
+            startDate = get_max_game_date()
         else:
             startDate = datetime.strptime(request_json['StartDate'], '%Y-%m-%d').date()
         if request_json and 'EndDate' not in request_json:  
-            endDate = datetime.now().strftime("%Y-%m-%d").date() 
+            endDate = datetime.now().date() 
         else:
             endDate = datetime.strptime(request_json['EndDate'], '%Y-%m-%d').date()
     except Exception as e:
         raise ValueError("Start & End dates must be in YYYY-MM-DD format") from e
-    
+
     # Distinct list of Months between start and end date
     delta = endDate - startDate       # as timedelta
-    
+
     if delta.days < 0:
-        raise ValueError("Start Date can't be before End Date") 
+        raise ValueError("Start Date can't be before End Date")
     
     ##########################################################################
     # Get Distinct Months for schedule to scrape
