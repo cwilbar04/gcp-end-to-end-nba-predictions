@@ -73,7 +73,8 @@ jobs:
               --memory=1024MB \
               --runtime=python38 \
               --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
-              --trigger-http
+              --trigger-http \
+              --timeout=300
 
 
 
