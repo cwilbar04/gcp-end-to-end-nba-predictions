@@ -98,7 +98,7 @@ def  nba_basketballreference_scraper(request):
     ##########################################################################
     
     try:
-        request_json = {"Type":"Scheduler"}
+        request_json = request.get_json()
         if request_json and 'StartDate' not in request_json:  
             startDate = get_max_game_date()
         else:
