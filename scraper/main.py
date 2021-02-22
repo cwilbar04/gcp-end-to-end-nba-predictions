@@ -97,6 +97,9 @@ def  nba_basketballreference_scraper(request):
     # Input Data Check
     ##########################################################################
     
+    # If request has specific StartDate/EndDate use those
+    # Otherwise, use the maximum game date in BigQuery as StartDate and Yesterday as EndDate
+
     try:
         request_json = request.get_json()
         if request_json and 'StartDate' not in request_json:  
@@ -104,7 +107,7 @@ def  nba_basketballreference_scraper(request):
         else:
             startDate = datetime.strptime(request_json['StartDate'], '%Y-%m-%d').date()
         if request_json and 'EndDate' not in request_json:  
-            endDate = datetime.now().date() 
+            endDate = (datetime.now() + timedelta(days=-1)).date()
         else:
             endDate = datetime.strptime(request_json['EndDate'], '%Y-%m-%d').date()
     except Exception as e:

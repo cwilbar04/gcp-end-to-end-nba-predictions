@@ -23,3 +23,6 @@ Need to setup Google Cloud Repository to Mirror Github - set this path as GLOUD_
 
 Must deploy Cloud Function using UI first
   - Show steps here
+
+Basketball Data Loaded from BasketballReference.com 
+Sports Reference LLC. Basketball-Reference.com - Basketball Statistics and History. https://www.basketball-reference.com/.
