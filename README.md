@@ -26,3 +26,6 @@ Must deploy Cloud Function using UI first
 
 Basketball Data Loaded from BasketballReference.com 
 Sports Reference LLC. Basketball-Reference.com - Basketball Statistics and History. https://www.basketball-reference.com/.
+
+CD set up conditionally based on folder pushes
+  - NOTE: This only works if push to folder path, not on MERGE commands

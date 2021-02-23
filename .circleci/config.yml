@@ -106,11 +106,11 @@ jobs:
           command: |           
               if [ $FOLDER3_COMMIT = $LATEST_COMMIT ];
                 then
-                  echo "Lastest commit in static so run the deploy task"
+                  echo "Lastest commit in .circleci so run the deploy task"
                   echo $FOLDER3_COMMIT
                   echo $LATEST_COMMIT
                 else
-                  echo "Lastest commit not in static or code just doesn't work"
+                  echo "Lastest commit not in .circleci or code just doesn't work"
                   echo $FOLDER3_COMMIT
                   echo $LATEST_COMMIT
               fi
