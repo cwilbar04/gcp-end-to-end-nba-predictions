@@ -51,30 +51,39 @@ jobs:
             . venv/bin/activate
             make lint
  
-  # conditional:
-  #   docker:
-  #     - image: google/cloud-sdk
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Just testing
-  #         command: |
-  #             # latest commit
-  #             LATEST_COMMIT=$(git rev-parse HEAD)
+  conditional:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run:
+          name: Test set variables in separate run
+          command: |
+            # latest commit
+            LATEST_COMMIT=$(git rev-parse HEAD)
 
-  #             # latest commit where path/to/folder1 was changed
-  #             FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
+            # latest commit where path/to/folder1 was changed
+            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)   
+
+      - run:
+          name: Just testing
+          command: |
+              # # latest commit
+              # LATEST_COMMIT=$(git rev-parse HEAD)
+
+              # # latest commit where path/to/folder1 was changed
+              # FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
               
-  #             if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
-  #               then
-  #                 echo "Lastest commit in scraper so run the deploy task"
-  #                 echo $FOLDER1_COMMIT
-  #                 echo $LATEST_COMMIT
-  #               else
-  #                 echo "Lastest commit not in scraper or code just doesn't work"
-  #                 echo $FOLDER1_COMMIT
-  #                 echo $LATEST_COMMIT
-  #             fi
+              if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
+                then
+                  echo "Lastest commit in scraper so run the deploy task"
+                  echo $FOLDER1_COMMIT
+                  echo $LATEST_COMMIT
+                else
+                  echo "Lastest commit not in scraper or code just doesn't work"
+                  echo $FOLDER1_COMMIT
+                  echo $LATEST_COMMIT
+              fi
                   
   deploy:
     docker:
@@ -103,7 +112,7 @@ jobs:
               then
                 echo $LATEST_COMMIT
                 echo $SCRAPER_COMMIT
-                
+
                 # Deploy command
                 FUNCTION_NAME=nba_basketball_reference_scraper
                 gcloud functions deploy $FUNCTION_NAME \
@@ -136,5 +145,5 @@ workflows:
          filters:
            branches:
              only:
-               - main
+               - not_a_branch
       # need to add different workflow for CD only when change to file in specific path
