@@ -128,7 +128,7 @@ jobs:
             #latest commit
             echo 'export LATEST_COMMIT=$(git rev-parse HEAD)' >> $BASH_ENV
             echo 'export SCRAPER_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)' >> $BASH_ENV
-            #echo 'export FOLDER2_COMMIT=$(git log -1 --format=format:%H --full-diff placeholder)' >> $BASH_ENV
+            #echo 'export WEBAPP_COMMIT=$(git log -1 --format=format:%H --full-diff webapp)' >> $BASH_ENV
             #echo 'export FOLDER3_COMMIT=$(git log -1 --format=format:%H --full-diff placeholder)' >> $BASH_ENV
             source $BASH_ENV
 
@@ -146,7 +146,7 @@ jobs:
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account circleci-gcf-deployer@nba-predictions-dev.iam.gserviceaccount.com --key-file=-
         
       - run:
-          name: Deploy To Google Cloud Functions
+          name: Deploy Google Cloud Functions
           command: |
             if [ $LATEST_COMMIT = $SCRAPER_COMMIT ];
               then
@@ -168,6 +168,15 @@ jobs:
                 #   --member=allUsers \
                 #   --role=roles/cloudfunctions.invoker \
                 #   --project=$GCLOUD_PROJECT_ID
+            fi
+
+      - run:
+          name: Deploy Web Service to Google App Engine
+          command: |
+            if [ $LATEST_COMMIT = $WEBAPP_COMMIT ];
+              then
+                # Deploy command
+                gcloud app deploy ../webapp/app.yaml --project=$GCLOUD_PROJECT_ID --promote --quiet
             fi
 
 workflows:
