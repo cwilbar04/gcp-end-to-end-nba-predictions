@@ -56,14 +56,15 @@ jobs:
       - image: google/cloud-sdk
     steps:
       - checkout
-      - run:
-          name: Test set variables in separate run
-          command: |
+      - environment:
+          # name: Test set variables in separate run
+          # command: |
             # latest commit
-            LATEST_COMMIT=$(git rev-parse HEAD)
+        LATEST_COMMIT=$(git rev-parse HEAD)
 
-            # latest commit where path/to/folder1 was changed
-            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)   
+        # latest commit where path/to/folder1 was changed
+        FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper) 
+        FOLDER2_COMMIT=$(git log -1 --format=format:%H --full-diff static)
 
       - run:
           name: Just testing
@@ -84,6 +85,25 @@ jobs:
                   echo $FOLDER1_COMMIT
                   echo $LATEST_COMMIT
               fi
+      - run:
+        name: Just testing 2
+        command: |
+            # # latest commit
+            # LATEST_COMMIT=$(git rev-parse HEAD)
+
+            # # latest commit where path/to/folder1 was changed
+            # FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
+            
+            if [ $FOLDER2_COMMIT = $LATEST_COMMIT ];
+              then
+                echo "Lastest commit in static so run the deploy task"
+                echo $FOLDER2_COMMIT
+                echo $LATEST_COMMIT
+              else
+                echo "Lastest commit not in static or code just doesn't work"
+                echo $FOLDER2_COMMIT
+                echo $LATEST_COMMIT
+            fi
                   
   deploy:
     docker:
