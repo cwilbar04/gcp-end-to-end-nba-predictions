@@ -69,8 +69,10 @@ jobs:
                 then
                   echo "Lastest commit in scraper so run the deploy task"
                   echo $FOLDER1_COMMIT
+                  echo $LATEST_COMMIT
                 else
                   echo "Lastest commit not in scraper or code just doesn't work"
+                  echo $FOLDER1_COMMIT
                   echo $LATEST_COMMIT
               fi
                   
