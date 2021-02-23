@@ -373,7 +373,7 @@ def  nba_basketballreference_scraper(request):
 
             # print(player_game_data)
             # print(games_data)
-            # Config
+            # Create new bigquery client each loop
             client = bigquery.Client()
             
             print(f'Loading data for {month} {year}')
