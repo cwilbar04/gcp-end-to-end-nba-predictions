@@ -116,6 +116,8 @@ jobs:
               fi
                   
   deploy:
+    # requires:
+    #   - build-test
     docker:
       - image: google/cloud-sdk
     steps:
@@ -126,17 +128,17 @@ jobs:
             #latest commit
             echo 'export LATEST_COMMIT=$(git rev-parse HEAD)' >> $BASH_ENV
             echo 'export SCRAPER_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)' >> $BASH_ENV
-            #echo 'export FOLDER2_COMMIT=$(git log -1 --format=format:%H --full-diff static)' >> $BASH_ENV
-            #echo 'export FOLDER3_COMMIT=$(git log -1 --format=format:%H --full-diff .circleci)' >> $BASH_ENV
+            #echo 'export FOLDER2_COMMIT=$(git log -1 --format=format:%H --full-diff placeholder)' >> $BASH_ENV
+            #echo 'export FOLDER3_COMMIT=$(git log -1 --format=format:%H --full-diff placeholder)' >> $BASH_ENV
             source $BASH_ENV
 
       - run:
-          name: Check for any relevant changes
-          command:
-            if ![ $LATEST_COMMIT = $SCRAPER_COMMIT ];
-              then
-                circleci-agent step halt
-            fi
+          name: Exit gracefully if no changes to any relevant folder
+          command: |
+            case $LATEST_COMMIT in
+              "$SCRAPER_COMMIT" | "$FOLDER2_COMMIT" | "$FOLDER3_COMMIT") echo 'At least one relevant folder changed - execute deploy';;
+              *) circleci-agent step halt;;
+            esac  
                 
       - run:
           name: Authorize GCloud Command Line Tool
@@ -177,11 +179,10 @@ workflows:
   version: 2.1
   build-test-and-deploy:
     jobs:
-      #- build-test
-      - conditional
+      - build-test
+      #- conditional
       - deploy:
          filters:
            branches:
              only:
-               - not_a_branch
-      # need to add different workflow for CD only when change to file in specific path
+               - main
