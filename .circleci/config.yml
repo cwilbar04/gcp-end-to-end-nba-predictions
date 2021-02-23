@@ -57,8 +57,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Environment variables
-            # name: Test set variables in separate run
+          name: Set Environment Variables
           command: |
             #latest commit
             echo 'export LATEST_COMMIT=$(git rev-parse HEAD)' >> $BASH_ENV
@@ -68,14 +67,8 @@ jobs:
             source $BASH_ENV
 
       - run:
-          name: Just testing
+          name: Just testing 1
           command: |
-              # # latest commit
-              # LATEST_COMMIT=$(git rev-parse HEAD)
-
-              # # latest commit where path/to/folder1 was changed
-              # FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
-              
               if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
                 then
                   echo "Lastest commit in scraper so run the deploy task"
@@ -89,12 +82,6 @@ jobs:
       - run:
           name: Just testing 2
           command: |
-              # # latest commit
-              # LATEST_COMMIT=$(git rev-parse HEAD)
-
-              # # latest commit where path/to/folder1 was changed
-              # FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
-              
               if [ $FOLDER2_COMMIT = $LATEST_COMMIT ];
                 then
                   echo "Lastest commit in static so run the deploy task"
@@ -107,22 +94,16 @@ jobs:
               fi
   
       - run:
-          name: Just testing 2
-          command: |
-              # # latest commit
-              # LATEST_COMMIT=$(git rev-parse HEAD)
-
-              # # latest commit where path/to/folder1 was changed
-              # FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
-              
-              if [ $FOLDER2_COMMIT = $LATEST_COMMIT ];
+          name: Just testing 3
+          command: |           
+              if [ $FOLDER3_COMMIT = $LATEST_COMMIT ];
                 then
                   echo "Lastest commit in static so run the deploy task"
-                  echo $FOLDER2_COMMIT
+                  echo $FOLDER3_COMMIT
                   echo $LATEST_COMMIT
                 else
                   echo "Lastest commit not in static or code just doesn't work"
-                  echo $FOLDER2_COMMIT
+                  echo $FOLDER3_COMMIT
                   echo $LATEST_COMMIT
               fi
                   
