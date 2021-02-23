@@ -89,10 +89,7 @@ def get_text(stat):
     return txt
 
 def  nba_basketballreference_scraper(request):
-   
-    # Config
-    client = bigquery.Client()
-    
+     
     ##########################################################################
     # Input Data Check
     ##########################################################################
@@ -376,7 +373,9 @@ def  nba_basketballreference_scraper(request):
 
             # print(player_game_data)
             # print(games_data)
-
+            # Config
+            client = bigquery.Client()
+            
             print(f'Loading data for {month} {year}')
             #player game data
             pandas_player_game_data = pd.DataFrame(player_game_data)
