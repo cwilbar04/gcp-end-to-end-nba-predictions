@@ -377,7 +377,8 @@ def  nba_basketballreference_scraper(request):
             client = bigquery.Client()
             
             print(f'Loading data for {month} {year}')
-            #player game data
+            
+            #Publish player game data
             pandas_player_game_data = pd.DataFrame(player_game_data)
             pandas_player_game_data['game_date'] = pandas_player_game_data['game_date'].astype('datetime64[ns]')
             pandas_player_game_data['load_datetime'] = pandas_player_game_data['load_datetime'].astype('datetime64[ns]')
@@ -406,7 +407,7 @@ def  nba_basketballreference_scraper(request):
             print(player_message)
             player_game_rows_loaded = player_game_rows_loaded + player_result.output_rows
 
-            #game data
+            #Publish game data
             pandas_games_data = pd.DataFrame(games_data)
             pandas_games_data['game_date'] = pandas_games_data['game_date'].astype('datetime64[ns]')
             pandas_games_data['load_datetime'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
