@@ -65,6 +65,11 @@ jobs:
             echo 'export FOLDER2_COMMIT=$(git log -1 --format=format:%H --full-diff static)' >> $BASH_ENV
             echo 'export FOLDER3_COMMIT=$(git log -1 --format=format:%H --full-diff .circleci)' >> $BASH_ENV
             source $BASH_ENV
+      
+      - run:
+        name: Exit gracefully if no changes to any relevant folder
+        command: |
+          test !($LATEST_COMMIT=$FOLDER1_COMMIT .o $LATEST_COMMIT=$FOLDER2_COMMIT .o $LATEST_COMMIT=$FOLDER3_COMMIT) && circleci-agent step halt 
 
       - run:
           name: Just testing 1
@@ -112,16 +117,24 @@ jobs:
       - image: google/cloud-sdk
     steps:
       - checkout
+      - run:
+          name: Set Environment Variables
+          command: |
+            #latest commit
+            echo 'export LATEST_COMMIT=$(git rev-parse HEAD)' >> $BASH_ENV
+            echo 'export SCRAPER_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)' >> $BASH_ENV
+            #echo 'export FOLDER2_COMMIT=$(git log -1 --format=format:%H --full-diff static)' >> $BASH_ENV
+            #echo 'export FOLDER3_COMMIT=$(git log -1 --format=format:%H --full-diff .circleci)' >> $BASH_ENV
+            source $BASH_ENV
 
       - run:
-          name: Set Commit Variables
-          command: |
-            # latest commit
-            LATEST_COMMIT=$(git rev-parse HEAD)
-
-            # latest commit where scraper was changed
-            SCRAPER_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
-
+          name: Check for any relevant changes
+          command:
+            if ![ $LATEST_COMMIT = $SCRAPER_COMMIT ];
+              then
+                circleci-agent step halt
+            fi
+                
       - run:
           name: Authorize GCloud Command Line Tool
           command: |
