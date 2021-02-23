@@ -161,7 +161,7 @@ workflows:
   version: 2.1
   build-test-and-deploy:
     jobs:
-      - build-test
+      #- build-test
       - conditional
       - deploy:
          filters:

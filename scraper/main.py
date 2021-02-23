@@ -4,8 +4,6 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from google.cloud import bigquery
 
-# adding a comment ot make a change
-
 def get_max_game_date():
     client = bigquery.Client()
     
