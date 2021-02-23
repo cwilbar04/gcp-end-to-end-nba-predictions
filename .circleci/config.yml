@@ -67,9 +67,9 @@ jobs:
             source $BASH_ENV
       
       - run:
-        name: Exit gracefully if no changes to any relevant folder
-        command: |
-          test !($LATEST_COMMIT=$FOLDER1_COMMIT .o $LATEST_COMMIT=$FOLDER2_COMMIT .o $LATEST_COMMIT=$FOLDER3_COMMIT) && circleci-agent step halt 
+          name: Exit gracefully if no changes to any relevant folder
+          command: |
+            test !($LATEST_COMMIT=$FOLDER1_COMMIT .o $LATEST_COMMIT=$FOLDER2_COMMIT .o $LATEST_COMMIT=$FOLDER3_COMMIT) && circleci-agent step halt 
 
       - run:
           name: Just testing 1
