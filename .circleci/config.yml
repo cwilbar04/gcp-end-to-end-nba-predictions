@@ -55,63 +55,63 @@ jobs:
     docker:
       - image: google/cloud-sdk
     steps:
-      -checkout
-      -run:
-        name: Just testing
-        command: |
-            # latest commit
-            LATEST_COMMIT=$(git rev-parse HEAD)
-
-            # latest commit where path/to/folder1 was changed
-            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff nba-predictions/scraper)
-            
-            if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
-              then
-                echo "Lastest commit in scraper so run the deploy task"
-                echo $FOLDER1_COMMIT
-              else
-                echo "Lastest commit not in scraper or code just doesn't work"
-                echo $LATEST_COMMIT
-                
-  deploy:
-    docker:
-      - image: google/cloud-sdk
-    steps:
       - checkout
       - run:
-          name: Authorize GCloud Command Line Tool
+          name: Just testing
           command: |
-            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account circleci-gcf-deployer@nba-predictions-dev.iam.gserviceaccount.com --key-file=-
-      - run:
-          name: Deploy To Google Cloud Functions
-          command: |
-            # latest commit
-            LATEST_COMMIT=$(git rev-parse HEAD)
+              # latest commit
+              LATEST_COMMIT=$(git rev-parse HEAD)
 
-            # latest commit where path/to/folder1 was changed
-            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff nba-predictions/scraper)
-            
-            if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
-              then 
-            # Deploy command
-            FUNCTION_NAME=nba_basketball_reference_scraper
-            gcloud functions deploy $FUNCTION_NAME \
-              --source=./scraper \
-              --project=$GCLOUD_PROJECT_ID \
-              --allow-unauthenticated \
-              --entry-point=nba_basketballreference_scraper \
-              --memory=1024MB \
-              --runtime=python38 \
-              --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
-              --trigger-http \
-              --timeout=300
+              # latest commit where path/to/folder1 was changed
+              FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff nba-predictions/scraper)
+              
+              if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
+                then
+                  echo "Lastest commit in scraper so run the deploy task"
+                  echo $FOLDER1_COMMIT
+                else
+                  echo "Lastest commit not in scraper or code just doesn't work"
+                  echo $LATEST_COMMIT
+                  
+    deploy:
+      docker:
+        - image: google/cloud-sdk
+      steps:
+        - checkout
+        - run:
+            name: Authorize GCloud Command Line Tool
+            command: |
+              echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account circleci-gcf-deployer@nba-predictions-dev.iam.gserviceaccount.com --key-file=-
+        - run:
+            name: Deploy To Google Cloud Functions
+            command: |
+              # latest commit
+              LATEST_COMMIT=$(git rev-parse HEAD)
 
-            gcloud functions add-iam-policy-binding nba_basketball_reference_scraper \
-              --member=allUsers \
-              --role=roles/cloudfunctions.invoker \
-              --project=$GCLOUD_PROJECT_ID
-              else
-                circleci-agent step halt
+              # latest commit where path/to/folder1 was changed
+              FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff nba-predictions/scraper)
+              
+              if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
+                then 
+              # Deploy command
+              FUNCTION_NAME=nba_basketball_reference_scraper
+              gcloud functions deploy $FUNCTION_NAME \
+                --source=./scraper \
+                --project=$GCLOUD_PROJECT_ID \
+                --allow-unauthenticated \
+                --entry-point=nba_basketballreference_scraper \
+                --memory=1024MB \
+                --runtime=python38 \
+                --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
+                --trigger-http \
+                --timeout=300
+
+              gcloud functions add-iam-policy-binding nba_basketball_reference_scraper \
+                --member=allUsers \
+                --role=roles/cloudfunctions.invoker \
+                --project=$GCLOUD_PROJECT_ID
+                else
+                  circleci-agent step halt
 
 workflows:
   version: 2.1
