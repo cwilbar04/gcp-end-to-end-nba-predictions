@@ -61,9 +61,9 @@ jobs:
             # name: Test set variables in separate run
           command: |
             #latest commit
-            echo 'export LATEST_COMMIT = $(git rev-parse HEAD)' >> $BASH_ENV
-            echo 'export FOLDER1_COMMIT = $(git log -1 --format=format:%H --full-diff scraper)' >> $BASH_ENV
-            echo 'export FOLDER2_COMMIT = $(git log -1 --format=format:%H --full-diff static)' >> $BASH_ENV
+            echo 'export LATEST_COMMIT=$(git rev-parse HEAD)' >> $BASH_ENV
+            echo 'export FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)' >> $BASH_ENV
+            echo 'export FOLDER2_COMMIT=$(git log -1 --format=format:%H --full-diff static)' >> $BASH_ENV
             source $BASH_ENV
 
       - run:
