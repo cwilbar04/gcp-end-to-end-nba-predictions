@@ -51,80 +51,86 @@ jobs:
             . venv/bin/activate
             make lint
  
-  conditional:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - run:
-          name: Just testing
-          command: |
-              # latest commit
-              LATEST_COMMIT=$(git rev-parse HEAD)
+  # conditional:
+  #   docker:
+  #     - image: google/cloud-sdk
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Just testing
+  #         command: |
+  #             # latest commit
+  #             LATEST_COMMIT=$(git rev-parse HEAD)
 
-              # latest commit where path/to/folder1 was changed
-              FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
+  #             # latest commit where path/to/folder1 was changed
+  #             FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
               
-              if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
-                then
-                  echo "Lastest commit in scraper so run the deploy task"
-                  echo $FOLDER1_COMMIT
-                  echo $LATEST_COMMIT
-                else
-                  echo "Lastest commit not in scraper or code just doesn't work"
-                  echo $FOLDER1_COMMIT
-                  echo $LATEST_COMMIT
-              fi
+  #             if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
+  #               then
+  #                 echo "Lastest commit in scraper so run the deploy task"
+  #                 echo $FOLDER1_COMMIT
+  #                 echo $LATEST_COMMIT
+  #               else
+  #                 echo "Lastest commit not in scraper or code just doesn't work"
+  #                 echo $FOLDER1_COMMIT
+  #                 echo $LATEST_COMMIT
+  #             fi
                   
   deploy:
     docker:
       - image: google/cloud-sdk
     steps:
       - checkout
-      - run:
-          name: Authorize GCloud Command Line Tool
-          command: |
-            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account circleci-gcf-deployer@nba-predictions-dev.iam.gserviceaccount.com --key-file=-
-      - run:
-          name: Deploy To Google Cloud Functions
-          command: |
-            # latest commit
-            LATEST_COMMIT=$(git rev-parse HEAD)
 
-            # latest commit where path/to/folder1 was changed
-            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff nba-predictions/scraper)
-            
-            if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
-              then 
-            # Deploy command
-            FUNCTION_NAME=nba_basketball_reference_scraper
-            gcloud functions deploy $FUNCTION_NAME \
-              --source=./scraper \
-              --project=$GCLOUD_PROJECT_ID \
-              --allow-unauthenticated \
-              --entry-point=nba_basketballreference_scraper \
-              --memory=1024MB \
-              --runtime=python38 \
-              --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
-              --trigger-http \
-              --timeout=300
+      -run:
+        name: Set Commit Variables
+        command: |
+        # latest commit
+        LATEST_COMMIT=$(git rev-parse HEAD)
 
-            gcloud functions add-iam-policy-binding nba_basketball_reference_scraper \
-              --member=allUsers \
-              --role=roles/cloudfunctions.invoker \
-              --project=$GCLOUD_PROJECT_ID
-              else
-                circleci-agent step halt
+        # latest commit where scraper was changed
+        SCRAPER_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)
+
+      - run:
+        name: Authorize GCloud Command Line Tool
+        command: |
+          echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account circleci-gcf-deployer@nba-predictions-dev.iam.gserviceaccount.com --key-file=-
+      
+      - run:
+        name: Deploy To Google Cloud Functions
+        command: |
+          if [ $LATEST_COMMIT = $SCRAPER_COMMIT ];
+            then 
+              # Deploy command
+              FUNCTION_NAME=nba_basketball_reference_scraper
+              gcloud functions deploy $FUNCTION_NAME \
+                --source=./scraper \
+                --project=$GCLOUD_PROJECT_ID \
+                --allow-unauthenticated \
+                --entry-point=nba_basketballreference_scraper \
+                --memory=1024MB \
+                --runtime=python38 \
+                --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
+                --trigger-http \
+                --timeout=300
+
+              gcloud functions add-iam-policy-binding nba_basketball_reference_scraper \
+                --member=allUsers \
+                --role=roles/cloudfunctions.invoker \
+                --project=$GCLOUD_PROJECT_ID
+          else
+            echo "No deployments necessary because no changes to deployment folder"
+          fi
 
 workflows:
   version: 2.1
   build-test-and-deploy:
     jobs:
       - build-test
-      - conditional
+      # - conditional
       - deploy:
          filters:
            branches:
              only:
-               - not_a_branch
+               - main
       # need to add different workflow for CD only when change to file in specific path
