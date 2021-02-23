@@ -72,6 +72,7 @@ jobs:
                 else
                   echo "Lastest commit not in scraper or code just doesn't work"
                   echo $LATEST_COMMIT
+              fi
                   
   deploy:
     docker:
