@@ -100,7 +100,10 @@ jobs:
           name: Deploy To Google Cloud Functions
           command: |
             if [ $LATEST_COMMIT = $SCRAPER_COMMIT ];
-              then 
+              then
+                echo $LATEST_COMMIT
+                echo $SCRAPER_COMMIT
+                
                 # Deploy command
                 FUNCTION_NAME=nba_basketball_reference_scraper
                 gcloud functions deploy $FUNCTION_NAME \
@@ -114,10 +117,11 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                gcloud functions add-iam-policy-binding nba_basketball_reference_scraper \
-                  --member=allUsers \
-                  --role=roles/cloudfunctions.invoker \
-                  --project=$GCLOUD_PROJECT_ID
+                # Need to figure out how to set this in the deploy
+                # gcloud functions add-iam-policy-binding nba_basketball_reference_scraper \
+                #   --member=allUsers \
+                #   --role=roles/cloudfunctions.invoker \
+                #   --project=$GCLOUD_PROJECT_ID
             else
               echo "No deployments necessary because no changes to deployment folder"
             fi
