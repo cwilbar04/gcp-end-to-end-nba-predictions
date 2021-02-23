@@ -29,3 +29,4 @@ Sports Reference LLC. Basketball-Reference.com - Basketball Statistics and Histo
 
 CD set up conditionally based on folder pushes
   - NOTE: This only works if push to folder path, not on MERGE commands
+  - Need to set up anything that needs to be deployed in its own file path if at all possible
