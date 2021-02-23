@@ -150,9 +150,6 @@ jobs:
           command: |
             if [ $LATEST_COMMIT = $SCRAPER_COMMIT ];
               then
-                echo $LATEST_COMMIT
-                echo $SCRAPER_COMMIT
-
                 # Deploy command
                 FUNCTION_NAME=nba_basketball_reference_scraper
                 gcloud functions deploy $FUNCTION_NAME \
@@ -171,8 +168,6 @@ jobs:
                 #   --member=allUsers \
                 #   --role=roles/cloudfunctions.invoker \
                 #   --project=$GCLOUD_PROJECT_ID
-            else
-              echo "No deployments necessary because no changes to deployment folder"
             fi
 
 workflows:
