@@ -69,7 +69,10 @@ jobs:
       - run:
           name: Exit gracefully if no changes to any relevant folder
           command: |
-            test !($LATEST_COMMIT=$FOLDER1_COMMIT .o $LATEST_COMMIT=$FOLDER2_COMMIT .o $LATEST_COMMIT=$FOLDER3_COMMIT) && circleci-agent step halt 
+            case $LATEST_COMMIT in
+              "$FOLDER1_COMMIT" | "$FOLDER2_COMMIT" | "$FOLDER3_COMMIT") echo 'At least one relevant folder changed - execute deploy';;
+              *) circleci-agent step halt;;
+            esac  
 
       - run:
           name: Just testing 1
