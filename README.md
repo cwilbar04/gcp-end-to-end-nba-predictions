@@ -13,6 +13,11 @@ Account that runs Google Cloud Function must have:
 
   BigQuery Edit permissions
 
+Need deployer service account set up with JSON saved as GCLOUD_SERVICE_KEY in CircleCI with following permissions:
+  App Engine Deployer
+  Cloud Functions Developer
+  Service Account User
+
 
 CircleCI needs following variables defined
 CLOUD_REPO	
