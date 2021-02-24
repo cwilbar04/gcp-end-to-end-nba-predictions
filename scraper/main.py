@@ -440,7 +440,7 @@ def  nba_basketballreference_scraper(request):
             print(game_message)
             game_rows_loaded = game_rows_loaded + game_result.output_rows
 
-        return f'Successfully loaded {player_game_rows_loaded} row(s) to raw_basketballreference_playerbox and {game_rows_loaded} to raw_basketballreference_game'
+        return 'Successfully loaded {} row(s) to raw_basketballreference_playerbox and {} to raw_basketballreference_game'.format(player_game_rows_loaded,game_rows_loaded)
 
     except Exception as e: 
         raise ValueError("Load Job Failed - Check error log for specific details") from e
