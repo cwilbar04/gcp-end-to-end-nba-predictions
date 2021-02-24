@@ -15,5 +15,4 @@ def predicted_pointspread(form_dict):
             loser = df['HomeTeam'][0]
         return f'I predict the {winner} will beat the {loser} by {abs(pointspread)} points!'
     except Exception as e:
-        return 'Sorry, there was a problem processing the data entered... Please go back and double check your entries, thanks!' from e
-        
+        raise ValueError('Sorry, there was a problem processing the data entered... Please go back and double check your entries, thanks!') from e
