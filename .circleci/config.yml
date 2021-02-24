@@ -136,7 +136,7 @@ jobs:
           name: Exit gracefully if no changes to any relevant folder
           command: |
             case $LATEST_COMMIT in
-              "$SCRAPER_COMMIT" | "$FOLDER2_COMMIT" | "$FOLDER3_COMMIT") echo 'At least one relevant folder changed - execute deploy';;
+              "$SCRAPER_COMMIT" | "$WEBAPP_COMMIT" | "$FOLDER3_COMMIT") echo 'At least one relevant folder changed - execute deploy';;
               *) circleci-agent step halt;;
             esac  
                 
