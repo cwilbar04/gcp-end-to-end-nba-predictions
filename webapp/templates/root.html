@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <title>NBA Predictions Home</title>
+  <script src="{{ url_for('static', filename='staticscript.js') }}"></script>
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <h1>Welcome to the NBA Predictions Home Page!</h1>
+
+  <h3>Choose an option to get started:</h3>
+
+  <br><br><br>
+
+  <form method="POST" action="/">
+    <button type="button" name="Choose Teams" value="Choose Teams" onclick="window.location.href='{{url_for('ChooseTeams')}}';"> Choose Teams</button>
+   </form>
+
+   <br><br><br>
+
+   <form method="POST" action="/">
+    <button type="button" name="See Upcoming Games" value="See Upcoming Games" onclick="window.location.href='{{url_for('ChooseTeams')}}';"> See Upcoming Games</button>
+   </form>
+  
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+  <title>Choose Teams</title>
+  <script src="{{ url_for('static', filename='staticscript.js') }}"></script>
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <h1>Predict Point Spread for Any Game!</h1>
+  <h3>The results are in and...</h3>
+
+    <script>
+    var output = '{{final_output}}'
+    document.body.innerHTML+=output
+    </script> 
+
+</body>
+</html>

@@ -1,9 +1,12 @@
-jupyter
+notebook
 pytest
 pylint
 pytest-cov
 click
 beautifulsoup4
 flask
-pandas-gbq
 pandas
+numpy
+google-cloud-bigquery
+pyarrow
+

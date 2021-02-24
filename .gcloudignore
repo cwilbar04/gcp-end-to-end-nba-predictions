@@ -12,6 +12,7 @@
 # below:
 .git
 .gitignore
+.ipynb_checkpoints
 
 # Python pycache:
 __pycache__/

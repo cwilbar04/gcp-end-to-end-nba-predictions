@@ -1,12 +1,17 @@
 import datetime
-
-from flask import Flask, render_template
+from model import predicted_pointspread
+from flask import Flask, render_template, request, url_for, redirect
+import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 
-
 @app.route('/')
 def root():
+    return render_template('root.html')
+
+@app.route('/ChooseTeams')
+def ChooseTeams():
     # For the sake of example, use static list of NBA teams
     # This will be replaced with real information in later steps.
     nba_teams = ['Atlanta Hawks',
@@ -40,9 +45,13 @@ def root():
                     'Utah Jazz',
                     'Washington Wizards'
                    ]
+    return render_template('ChooseTeams.html', teams=nba_teams)
 
-    return render_template('index.html', teams=nba_teams)
-
+@app.route('/ChooseTeams', methods=['POST'])
+def ChooseTeamsPost():
+    form_dict = {'HomeTeam':request.form['HomeTeam'], 'AwayTeam':request.form['AwayTeam']}
+    final_output = predicted_pointspread(form_dict)
+    return render_template('ChooseTeamsPost.html', final_output=final_output)
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
