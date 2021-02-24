@@ -13,7 +13,7 @@ def predicted_pointspread(form_dict):
         else:
             winner = df['AwayTeam'][0]
             loser = df['HomeTeam'][0]
-        return f'I predict the {winner} will beat the {loser} by {abs(pointspread)} points'
+        return f'I predict the {winner} will beat the {loser} by {abs(pointspread)} points!'
     except:
         return 'Sorry, there was a problem processing the data entered... Please go back and double check your entries, thanks!'
         

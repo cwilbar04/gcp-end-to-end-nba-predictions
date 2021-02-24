@@ -176,7 +176,7 @@ jobs:
             if [ $LATEST_COMMIT = $WEBAPP_COMMIT ];
               then
                 # Deploy command
-                gcloud app deploy ../webapp/app.yaml --project=$GCLOUD_PROJECT_ID --promote --quiet
+                gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID --promote --quiet
             fi
 
 workflows:
