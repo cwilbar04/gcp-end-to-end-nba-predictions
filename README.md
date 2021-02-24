@@ -17,8 +17,7 @@ Need deployer service account set up with JSON saved as GCLOUD_SERVICE_KEY in Ci
   App Engine Deployer
   Cloud Functions Developer
   Service Account User
-  Storage Transfer User
-  --storage.objects.list
+  Storage Object Admin
 
 Need to enable the following Google Cloud APIs:
 App Engine Admin API
