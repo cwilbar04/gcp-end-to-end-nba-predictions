@@ -18,6 +18,16 @@ Need deployer service account set up with JSON saved as GCLOUD_SERVICE_KEY in Ci
   Cloud Functions Developer
   Service Account User
 
+Need to enable the following Google Cloud APIs:
+App Engine Admin API
+BigQuery API
+Cloud Build API
+Cloud Functions API
+Cloud Logging API
+Cloud Monitoring API
+Clous Resource Manager API
+Cloud Scheduler API
+Compute Engine API
 
 CircleCI needs following variables defined
 CLOUD_REPO	
