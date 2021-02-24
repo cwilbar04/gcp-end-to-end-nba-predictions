@@ -9,11 +9,9 @@ test:
 lint:
 	pylint --disable=R,C mylibrary cli scraper tests
 
-setup_windows:
+venv_windows:
 	python -m venv ../.venv
-
-activate_windows:
-	../.venv/Scripts/activate
+	echo "execute ../.venv/Scripts/activate"
 
 env:
 	#Show information about environment
@@ -21,7 +19,5 @@ env:
 	python3 --version
 	which pytest
 	which pylint
-
-venv_windows: setup_windows activate_windows install
 
 all: install lint test
