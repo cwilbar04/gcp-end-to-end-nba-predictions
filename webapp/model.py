@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 
-#testing change to webapp folder for deploy
 
 def predicted_pointspread(form_dict):
     try:

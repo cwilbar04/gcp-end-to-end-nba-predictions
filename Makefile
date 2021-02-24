@@ -7,7 +7,7 @@ test:
 	## python -m pytest --nbval notebook.ipynb
 
 lint:
-	pylint --disable=R,C mylibrary cli scraper tests
+	pylint --disable=R,C mylibrary cli scraper tests webapp
 
 venv_windows:
 	python -m venv ../.venv
