@@ -4,8 +4,10 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from google.cloud import bigquery
 
+project = 'nba-predictions-dev'
+
 def get_max_game_date():
-    client = bigquery.Client()
+    client = bigquery.Client(project=project)
     
     QUERY = (
     "SELECT date_add(max(game_date), INTERVAL 1 day) as max_game_date FROM `nba.raw_basketballreference_game`"
@@ -277,7 +279,6 @@ def  nba_basketballreference_scraper(request):
 
                     ##############################################
                     # Game Box - Home
-                    #box-WAS-q1-basic
                     stat_type = "game"
                     h_or_a = "h"
                     team_abbrev = game['home_abbr']
@@ -286,7 +287,6 @@ def  nba_basketballreference_scraper(request):
 
                     ##############################################
                     # Game Box - Away
-                    #box-WAS-q1-basic
                     stat_type = "game"
                     h_or_a = "a"
                     team_abbrev = game['away_abbr']
@@ -374,7 +374,7 @@ def  nba_basketballreference_scraper(request):
             # print(player_game_data)
             # print(games_data)
             # Create new bigquery client each loop
-            client = bigquery.Client()
+            client = bigquery.Client(project=project)
             
             print(f'Loading data for {month} {year}')
             
@@ -411,7 +411,6 @@ def  nba_basketballreference_scraper(request):
             pandas_games_data = pd.DataFrame(games_data)
             pandas_games_data['game_date'] = pandas_games_data['game_date'].astype('datetime64[ns]')
             pandas_games_data['load_datetime'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
-            pandas_games_data['game_start_time'] = pandas_games_data['game_start_time'].astype('datetime64[ns]')
             job_config = bigquery.LoadJobConfig()
             job_config.autodetect='True'
             job_config.create_disposition = 'CREATE_IF_NEEDED'
@@ -425,8 +424,7 @@ def  nba_basketballreference_scraper(request):
                 bigquery.SchemaField('visitor_team_name','STRING', 'REQUIRED'),
                 bigquery.SchemaField('away_abbr','STRING', 'REQUIRED'),
                 bigquery.SchemaField('game_date','DATE'),
-                bigquery.SchemaField('load_datetime','TIMESTAMP'),
-                bigquery.SchemaField('game_start_time','TIMESTAMP')
+                bigquery.SchemaField('load_datetime','TIMESTAMP')
             ]
             job_config.time_partitioning = bigquery.TimePartitioning(
                 type_=bigquery.TimePartitioningType.DAY,
