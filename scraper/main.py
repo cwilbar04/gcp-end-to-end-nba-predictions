@@ -293,69 +293,69 @@ def  nba_basketballreference_scraper(request):
                     id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
                     player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
 
-                    ##############################################
-                    # Q1 Box - Home
-                    stat_type = "q1"
-                    h_or_a = "h"
-                    team_abbrev = game['home_abbr']
-                    id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
-                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+                    # ##############################################
+                    # # Q1 Box - Home
+                    # stat_type = "q1"
+                    # h_or_a = "h"
+                    # team_abbrev = game['home_abbr']
+                    # id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
+                    # player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
 
-                    ##############################################
-                    # Q1 Box - Away
-                    stat_type = "q1"
-                    h_or_a = "a"
-                    team_abbrev = game['away_abbr']
-                    id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
-                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+                    # ##############################################
+                    # # Q1 Box - Away
+                    # stat_type = "q1"
+                    # h_or_a = "a"
+                    # team_abbrev = game['away_abbr']
+                    # id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
+                    # player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
 
-                    ##############################################
-                    # Q2 Box - Home
-                    stat_type = "q2"
-                    h_or_a = "h"
-                    team_abbrev = game['home_abbr']
-                    id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
-                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+                    # ##############################################
+                    # # Q2 Box - Home
+                    # stat_type = "q2"
+                    # h_or_a = "h"
+                    # team_abbrev = game['home_abbr']
+                    # id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
+                    # player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
 
-                    ##############################################
-                    # Q2 Box - Away
-                    stat_type = "q2"
-                    h_or_a = "a"
-                    team_abbrev = game['away_abbr']
-                    id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
-                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+                    # ##############################################
+                    # # Q2 Box - Away
+                    # stat_type = "q2"
+                    # h_or_a = "a"
+                    # team_abbrev = game['away_abbr']
+                    # id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
+                    # player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
 
-                    ##############################################
-                    # Q3 Box - Home
-                    stat_type = "q3"
-                    h_or_a = "h"
-                    team_abbrev = game['home_abbr']
-                    id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
-                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+                    # ##############################################
+                    # # Q3 Box - Home
+                    # stat_type = "q3"
+                    # h_or_a = "h"
+                    # team_abbrev = game['home_abbr']
+                    # id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
+                    # player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
 
-                    ##############################################
-                    # Q3 Box - Away
-                    stat_type = "q3"
-                    h_or_a = "a"
-                    team_abbrev = game['away_abbr']
-                    id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
-                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+                    # ##############################################
+                    # # Q3 Box - Away
+                    # stat_type = "q3"
+                    # h_or_a = "a"
+                    # team_abbrev = game['away_abbr']
+                    # id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
+                    # player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
 
-                    ##############################################
-                    # Q4 Box - Home
-                    stat_type = "q4"
-                    h_or_a = "h"
-                    team_abbrev = game['home_abbr']
-                    id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
-                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+                    # ##############################################
+                    # # Q4 Box - Home
+                    # stat_type = "q4"
+                    # h_or_a = "h"
+                    # team_abbrev = game['home_abbr']
+                    # id_string = "box-" + game['home_abbr'] + "-" + stat_type + "-basic"
+                    # player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
 
-                    ##############################################
-                    # Q4 Box - Away
-                    stat_type = "q4"
-                    h_or_a = "a"
-                    team_abbrev = game['away_abbr']
-                    id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
-                    player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
+                    # ##############################################
+                    # # Q4 Box - Away
+                    # stat_type = "q4"
+                    # h_or_a = "a"
+                    # team_abbrev = game['away_abbr']
+                    # id_string = "box-" + game['away_abbr'] + "-" + stat_type + "-basic"
+                    # player_game_data = get_game_players(soup, player_game_data, id_string, game['game_key'], stat_type, h_or_a, team_abbrev, game_date)
 
                     games_data.append(game)
 
