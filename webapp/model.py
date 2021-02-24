@@ -5,7 +5,7 @@ import numpy as np
 def predicted_pointspread(form_dict):
     try:
         df = pd.DataFrame(form_dict, index=[0])
-        pointspread = np.random.randint(-40,40)
+        pointspread = np.random.randint(-1000,1000)
         pointspread = 1 if pointspread == 0 else pointspread
         if pointspread > 0:
             winner = df['HomeTeam'][0]
