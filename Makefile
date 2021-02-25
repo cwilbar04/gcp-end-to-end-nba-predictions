@@ -10,8 +10,8 @@ lint:
 	pylint --disable=R,C mylibrary cli scraper tests webapp
 
 venv_windows:
-	python -m venv ../.venv
-	echo "execute ../.venv/Scripts/activate"
+	python -m venv ..\.venv
+	..\.venv\Scripts\activate
 
 env:
 	#Show information about environment

@@ -1,6 +1,9 @@
 #import datetime
 from model import predicted_pointspread
 from flask import Flask, render_template, request#, url_for, redirect
+from google.cloud import storage
+import json
+import os
 #import pandas as pd
 #import numpy as np
 
@@ -52,6 +55,25 @@ def ChooseTeamsPost():
     form_dict = {'HomeTeam':request.form['HomeTeam'], 'AwayTeam':request.form['AwayTeam']}
     final_output = predicted_pointspread(form_dict)
     return render_template('ChooseTeamsPost.html', final_output=final_output)
+
+@app.route('/UpcomingGames')
+def UpcomingGames():
+    client = storage.Client()
+    bucket_name = os.environ.get("CLOUD_STORAGE_BUCKET") #'nba-predictions-dev.appspot.com'os.environ.get("CLOUD_STORAGE_BUCKET")
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob('static/monday.json').download_as_string()
+    data = json.loads(blob.decode("utf-8").replace("'",'"'))
+    home_teams = list(data['home_team_name'].values())
+    away_teams = list(data['visitor_team_name'].values())
+    game_day = list(data['game_day'].values())
+    game_date = list(data['game_date'].values())
+    game_start_time = list(data['game_start_time'].values())
+    games = []
+    for i in range(len(home_teams)-1):
+        games.append(f'{away_teams[i]} vs. {home_teams[i]} at {game_start_time[i]} on {game_day[i]}, {game_date[i]}')
+    games
+    return render_template('UpcomingGames.html', games=games, home_teams = home_teams, away_teams=away_teams, game_day=game_day, game_date = game_date, game_start_time = game_start_time)
+
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App

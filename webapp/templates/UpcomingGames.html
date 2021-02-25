@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+  <title>Choose Teams</title>
+  <script src="{{ url_for('static', filename='staticscript.js') }}"></script>
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <h1>All Upcoming Games</h1>
+
+  <h4>{% for game in games %}
+        {{ game }}  
+        <br><br>
+      {% endfor %}
+  </h4>
+
+</body>
+</html>
