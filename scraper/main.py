@@ -142,13 +142,16 @@ def  nba_basketballreference_scraper(request):
     game_rows_loaded = 0
     
     try:
-
         schedule = []
-        for v in yearmonths:
+        for v in yearmonths:        
             year = str(v['year'])
             month = v['monthname']
-            url = 'https://www.basketball-reference.com/leagues/NBA_' + year + '_games-' + month + '.html'
-            #print(url)
+            ## the 2019-2020 season had games in October 2019 and 2020 requiring custom URL logic
+            if month == 'october' ansd (year == '2020' or year == '2021'):
+                url = f'https://www.basketball-reference.com/leagues/NBA_{year}_games-{month}-{v["year"] - 1}.html'
+            else:
+                url = f'https://www.basketball-reference.com/leagues/NBA_{year}_games-{month}.html'
+            #print(url)s
         
             html = requests.get(url)
             
