@@ -4,10 +4,11 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from google.cloud import bigquery
 
-project = 'nba-predictions-dev'
+
 
 def get_max_game_date():
-    client = bigquery.Client(project=project)
+    project_id = os.environ.get('GCP_PROJECT')
+    client = bigquery.Client(project=project_id)
     
     QUERY = (
     "SELECT date_add(max(game_date), INTERVAL 1 day) as max_game_date FROM `nba.raw_basketballreference_game`"
@@ -90,8 +91,9 @@ def get_text(stat):
         txt = None
     return txt
 
-def  nba_basketballreference_scraper(request):
+def  nba_basketballreference_scraper(request,project_id):
      
+     project_id = os.environ.get('GCP_PROJECT')
     ##########################################################################
     # Input Data Check
     ##########################################################################
