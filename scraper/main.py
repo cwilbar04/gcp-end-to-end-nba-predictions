@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import pandas as pd
 from google.cloud import bigquery
+import os
 
 
 
@@ -379,7 +380,7 @@ def  nba_basketballreference_scraper(request,project_id):
             # print(player_game_data)
             # print(games_data)
             # Create new bigquery client each loop
-            client = bigquery.Client(project=project)
+            client = bigquery.Client(project=project_id)
             
             print(f'Loading data for {month} {year}')
             
