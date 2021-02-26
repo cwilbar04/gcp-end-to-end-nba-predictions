@@ -71,7 +71,6 @@ def UpcomingGames():
     games = []
     for i in range(len(home_teams)-1):
         games.append(f'{away_teams[i]} vs. {home_teams[i]} at {game_start_time[i]} on {game_day[i]}, {game_date[i]}')
-    games
     return render_template('UpcomingGames.html', games=games, home_teams = home_teams, away_teams=away_teams, game_day=game_day, game_date = game_date, game_start_time = game_start_time)
 
 

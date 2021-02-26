@@ -93,7 +93,7 @@ def get_text(stat):
 
 def  nba_basketballreference_scraper(request,project_id):
      
-     project_id = os.environ.get('GCP_PROJECT')
+    project_id = os.environ.get('GCP_PROJECT')
     ##########################################################################
     # Input Data Check
     ##########################################################################
