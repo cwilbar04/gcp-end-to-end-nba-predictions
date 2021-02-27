@@ -103,11 +103,11 @@ def  nba_basketballreference_scraper(request):
     # Otherwise, use the maximum game date in BigQuery as StartDate and Yesterday as EndDate
 
     try:
-        request_json = request.get_json()
-    except:
-        request_json = request
-    
-    try:
+        if type(request) == 'dict':
+            request_json = request
+        else:
+            request_json = request.get_json()
+        
         if request_json and 'StartDate' in request_json:  
             startDate = datetime.strptime(request_json['StartDate'], '%Y-%m-%d').date()            
         else:
