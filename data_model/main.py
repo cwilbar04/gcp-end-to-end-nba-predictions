@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from google.cloud import bigquery
-import pyarrow
 import os
 
 pyarrow.int32()
