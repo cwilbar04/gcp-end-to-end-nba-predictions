@@ -116,8 +116,8 @@ jobs:
               fi
                   
   deploy:
-    # requires:
-    #   - build-test
+    requires:
+      - build-test
     docker:
       - image: google/cloud-sdk
     steps:
