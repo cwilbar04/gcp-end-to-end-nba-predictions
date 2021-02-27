@@ -217,7 +217,7 @@ def create_model_data(request):
         for col in wma_columns:
             team_games = create_linear_weighted_moving_average(team_games,col,W)
             team_games[f'incoming_wma_{W}_{col}'] = team_games[f'wma_{W}_{col}'].shift()
-        games_by_team_with_streak = pd.concat([games_by_team_with_streak, team_games])
+        games_by_team_with_extras = pd.concat([games_by_team_with_extras, team_games])
 
     games_by_team = games_by_team_with_extras.copy()
 
