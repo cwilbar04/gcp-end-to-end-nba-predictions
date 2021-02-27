@@ -104,6 +104,10 @@ def  nba_basketballreference_scraper(request):
 
     try:
         request_json = request.get_json()
+    except:
+        request_json = request
+    
+    try:
         if request_json and 'StartDate' in request_json:  
             startDate = datetime.strptime(request_json['StartDate'], '%Y-%m-%d').date()            
         else:
@@ -154,7 +158,7 @@ def  nba_basketballreference_scraper(request):
                 url = f'https://www.basketball-reference.com/leagues/NBA_{year}_games-{month}-{v["year"] - 1}.html'
             else:
                 url = f'https://www.basketball-reference.com/leagues/NBA_{year}_games-{month}.html'
-            #print(url)s
+            #print(url)
         
             html = requests.get(url)
             
@@ -230,7 +234,7 @@ def  nba_basketballreference_scraper(request):
 
                     #print(url)
                     r = requests.get(url)
-                    #print('here2')
+ 
                     soup = BeautifulSoup(str(r.content).replace("<!--","").replace('-->',''), 'html.parser')
 
                     ##############################################
@@ -383,13 +387,49 @@ def  nba_basketballreference_scraper(request):
             client = bigquery.Client(project=project_id)
             
             print(f'Loading data for {month} {year}')
-            
+ 
+            #Publish game data
+            try:
+                pandas_games_data = pd.DataFrame(games_data)
+                pandas_games_data['game_date'] = pandas_games_data['game_date'].astype('datetime64[ns]').dt.date
+                pandas_games_data['load_datetime'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
+                job_config = bigquery.LoadJobConfig()
+                job_config.autodetect='False'
+                job_config.create_disposition = 'CREATE_IF_NEEDED'
+                job_config.write_disposition = 'WRITE_APPEND'
+                ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
+                job_config.schema = [
+                    bigquery.SchemaField('game_key','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('game_date','DATE', 'REQUIRED'),
+                    bigquery.SchemaField('home_team_name','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('home_abbr','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('visitor_team_name','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('away_abbr','STRING', 'REQUIRED'),
+                    bigquery.SchemaField('load_datetime','TIMESTAMP'),
+                    bigquery.SchemaField('game_start_time','STRING')
+                ]
+                job_config.time_partitioning = bigquery.TimePartitioning(
+                    type_=bigquery.TimePartitioningType.DAY,
+                    field="game_date")
+                job_game = client.load_table_from_dataframe(pandas_games_data, 'nba.raw_basketballreference_game', job_config=job_config)
+                game_result = job_game.result()
+                game_message = (
+                    f'Job ID: {game_result.job_id} '
+                    f'was started {game_result.started} '
+                    f'and ended {game_result.ended} '
+                    f'loading {game_result.output_rows} row(s) '
+                    f'to {game_result.destination}')
+                print(game_message)
+                game_rows_loaded = game_rows_loaded + game_result.output_rows
+            except Exception as e:
+                raise ValueError("Game data failed to load. See error and do not load player data") from e
+
             #Publish player game data
             pandas_player_game_data = pd.DataFrame(player_game_data)
-            pandas_player_game_data['game_date'] = pandas_player_game_data['game_date'].astype('datetime64[ns]')
+            pandas_player_game_data['game_date'] = pandas_player_game_data['game_date'].astype('datetime64[ns]').dt.date
             pandas_player_game_data['load_datetime'] = pandas_player_game_data['load_datetime'].astype('datetime64[ns]')
             job_config = bigquery.LoadJobConfig()
-            job_config.autodetect='True'
+            job_config.autodetect='False'
             job_config.create_disposition = 'CREATE_IF_NEEDED'
             job_config.write_disposition = 'WRITE_APPEND'
              ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
@@ -413,41 +453,9 @@ def  nba_basketballreference_scraper(request):
             print(player_message)
             player_game_rows_loaded = player_game_rows_loaded + player_result.output_rows
 
-            #Publish game data
-            pandas_games_data = pd.DataFrame(games_data)
-            pandas_games_data['game_date'] = pandas_games_data['game_date'].astype('datetime64[ns]')
-            pandas_games_data['load_datetime'] = pandas_games_data['load_datetime'].astype('datetime64[ns]')
-            job_config = bigquery.LoadJobConfig()
-            job_config.autodetect='True'
-            job_config.create_disposition = 'CREATE_IF_NEEDED'
-            job_config.write_disposition = 'WRITE_APPEND'
-            ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
-            job_config.schema = [
-                bigquery.SchemaField('game_key','STRING', 'REQUIRED'),
-                bigquery.SchemaField('game_date','DATE', 'REQUIRED'),
-                bigquery.SchemaField('home_team_name','STRING', 'REQUIRED'),
-                bigquery.SchemaField('home_abbr','STRING', 'REQUIRED'),
-                bigquery.SchemaField('visitor_team_name','STRING', 'REQUIRED'),
-                bigquery.SchemaField('away_abbr','STRING', 'REQUIRED'),
-                bigquery.SchemaField('load_datetime','TIMESTAMP')
-            ]
-            job_config.time_partitioning = bigquery.TimePartitioning(
-                type_=bigquery.TimePartitioningType.DAY,
-                field="game_date")
-            job_game = client.load_table_from_dataframe(pandas_games_data, 'nba.raw_basketballreference_game', job_config=job_config)
-            game_result = job_game.result()
-            game_message = (
-                f'Job ID: {game_result.job_id} '
-                f'was started {game_result.started} '
-                f'and ended {game_result.ended} '
-                f'loading {game_result.output_rows} row(s) '
-                f'to {game_result.destination}')
-            print(game_message)
-            game_rows_loaded = game_rows_loaded + game_result.output_rows
+
 
     except Exception as e: 
         raise ValueError("Load Job Failed - Check error log for specific details") from e
 
     return f'Successfully loaded {player_game_rows_loaded} row(s) to raw_basketballreference_playerbox and {game_rows_loaded} to raw_basketballreference_game'
-
-
