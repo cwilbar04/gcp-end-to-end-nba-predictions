@@ -4,6 +4,7 @@ from google.cloud import bigquery
 import pyarrow
 import os
 
+pyarrow.int32()
 ## Insert initial setup in entry point function: create_model_data
 
 def convert_to_seconds(x):
