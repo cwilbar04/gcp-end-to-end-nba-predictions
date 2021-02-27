@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from google.cloud import bigquery
+import firebase_admin
 from firebase_admin import firestore
 import os
 
