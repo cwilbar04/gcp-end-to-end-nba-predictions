@@ -424,12 +424,11 @@ def  nba_basketballreference_scraper(request):
             ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
             job_config.schema = [
                 bigquery.SchemaField('game_key','STRING', 'REQUIRED'),
-                bigquery.SchemaField('game_date','STRING', 'REQUIRED'),
+                bigquery.SchemaField('game_date','DATE', 'REQUIRED'),
                 bigquery.SchemaField('home_team_name','STRING', 'REQUIRED'),
                 bigquery.SchemaField('home_abbr','STRING', 'REQUIRED'),
                 bigquery.SchemaField('visitor_team_name','STRING', 'REQUIRED'),
                 bigquery.SchemaField('away_abbr','STRING', 'REQUIRED'),
-                bigquery.SchemaField('game_date','DATE'),
                 bigquery.SchemaField('load_datetime','TIMESTAMP')
             ]
             job_config.time_partitioning = bigquery.TimePartitioning(

@@ -1,11 +1,12 @@
-#import datetime
 from model import predicted_pointspread
 from flask import Flask, render_template, request#, url_for, redirect
 from google.cloud import storage
+import firebase_admin
+from firebase_admin import firestore
 import json
 import os
-#import pandas as pd
-#import numpy as np
+
+
 
 app = Flask(__name__)
 
@@ -17,37 +18,45 @@ def home():
 def ChooseTeams():
     # For the sake of example, use static list of NBA teams
     # This will be replaced with real information in later steps.
-    nba_teams = ['Atlanta Hawks',
-                    'Boston Celtics',
-                    'Brooklyn Nets',
-                    'Charlotte Hornets',
-                    'Chicago Bulls',
-                    'Cleveland Cavaliers',
-                    'Dallas Mavericks',
-                    'Denver Nuggets',
-                    'Detroit Pistons',
-                    'Golden State Warriors',
-                    'Houston Rockets',
-                    'Indiana Pacers',
-                    'Los Angeles Clippers',
-                    'Los Angeles Lakers',
-                    'Memphis Grizzlies',
-                    'Miami Heat',
-                    'Milwaukee Bucks',
-                    'Minnesota Timberwolves',
-                    'New Orleans Pelicans',
-                    'New York Knicks',
-                    'Oklahoma City Thunder',
-                    'Orlando Magic',
-                    'Philadelphia 76ers',
-                    'Phoenix Suns',
-                    'Portland Trail Blazers',
-                    'Sacramento Kings',
-                    'San Antonio Spurs',
-                    'Toronto Raptors',
-                    'Utah Jazz',
-                    'Washington Wizards'
-                   ]
+    # nba_teams = ['Atlanta Hawks',
+    #                 'Boston Celtics',
+    #                 'Brooklyn Nets',
+    #                 'Charlotte Hornets',
+    #                 'Chicago Bulls',
+    #                 'Cleveland Cavaliers',
+    #                 'Dallas Mavericks',
+    #                 'Denver Nuggets',
+    #                 'Detroit Pistons',
+    #                 'Golden State Warriors',
+    #                 'Houston Rockets',
+    #                 'Indiana Pacers',
+    #                 'Los Angeles Clippers',
+    #                 'Los Angeles Lakers',
+    #                 'Memphis Grizzlies',
+    #                 'Miami Heat',
+    #                 'Milwaukee Bucks',
+    #                 'Minnesota Timberwolves',
+    #                 'New Orleans Pelicans',
+    #                 'New York Knicks',
+    #                 'Oklahoma City Thunder',
+    #                 'Orlando Magic',
+    #                 'Philadelphia 76ers',
+    #                 'Phoenix Suns',
+    #                 'Portland Trail Blazers',
+    #                 'Sacramento Kings',
+    #                 'San Antonio Spurs',
+    #                 'Toronto Raptors',
+    #                 'Utah Jazz',
+    #                 'Washington Wizards'
+    #                ]
+    
+    ## Temporarily use firebase for testing. Consider using static list to save resource cost
+    firebase_admin.initialize_app()
+    db = firestore.client()
+    docs = db.collection('team_model_data').stream()
+    nba_teams = []
+    for doc in docs:
+        nba_teams.append(doc.id)
     return render_template('ChooseTeams.html', teams=nba_teams)
 
 @app.route('/ChooseTeams', methods=['POST'])

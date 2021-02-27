@@ -9,15 +9,12 @@ test:
 lint:
 	pylint --disable=R,C mylibrary cli scraper tests webapp data_model
 
-venv_windows:
+venv_create: 
 	python -m venv ..\.venv
+
+venv_activate:
 	..\.venv\Scripts\activate
 
-env:
-	#Show information about environment
-	which python3
-	python3 --version
-	which pytest
-	which pylint
+venv: venv_create venv_activate
 
 all: install lint test
