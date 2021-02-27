@@ -10,3 +10,4 @@ numpy
 google-cloud-bigquery
 pyarrow
 google-cloud-storage
+google-cloud-bigquery-storage
