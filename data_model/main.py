@@ -1,18 +1,18 @@
 import pandas as pd
 import numpy as np
 from google.cloud import bigquery
-from datetime import datetime
+
 import os
 
 ## Insert initial setup in entry point function: create_model_data
 
 def convert_to_seconds(x):
-  sp = int(x.split(':')[0]) * 60 + int(x.split(':')[1])
-  return sp
+    sp = int(x.split(':')[0]) * 60 + int(x.split(':')[1])
+    return sp
 
 def switch_key(key):
-  new_key = key[:-1] + ('h' if key[-1] == 'a' else 'a')
-  return new_key
+    new_key = key[:-1] + ('h' if key[-1] == 'a' else 'a')
+    return new_key
 
 def generate_streak_info(data,column):
     """
