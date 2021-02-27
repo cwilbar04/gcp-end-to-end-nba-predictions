@@ -65,6 +65,13 @@ def create_linear_weighted_moving_average(data,column,W):
     return data_with_moving_average
 
 def create_model_data(request):
+    
+ 
+    request_json = request.get_json()
+    if request_json:
+        print("Payload ignored. This function does not use a payload")
+    
+    
     ## Setup
     my_project_id = os.environ.get('GCP_PROJECT')
     client = bigquery.Client(project=my_project_id)
