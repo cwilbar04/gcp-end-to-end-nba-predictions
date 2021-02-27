@@ -64,7 +64,7 @@ def create_linear_weighted_moving_average(data,column,W):
     data_with_moving_average[f'wma_{W}_{column}'] = data_with_moving_average[column].rolling(W).apply(lambda col: np.dot(col, weights)/weights.sum(), raw=True)
     return data_with_moving_average
 
-def create_model_data():
+def create_model_data(request):
     ## Setup
     my_project_id = os.environ.get('GCP_PROJECT')
     client = bigquery.Client(project=my_project_id)
