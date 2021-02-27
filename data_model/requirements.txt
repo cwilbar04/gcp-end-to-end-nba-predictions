@@ -3,3 +3,4 @@ google-cloud-bigquery-storage
 pandas
 numpy
 pyarrow
+firebase-admin

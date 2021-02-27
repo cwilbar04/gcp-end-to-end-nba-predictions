@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from google.cloud import bigquery
+from firebase_admin import firestore
 import os
 
 ## Insert initial setup in entry point function: create_model_data
@@ -230,13 +231,32 @@ def create_model_data(request):
     #Reset index to load game_date
     model_game_data.reset_index(drop=False,inplace=True)
 
-    #Create new client and load table to Big Query
+    #Create data frame with most recent game info to be used as input to model on webpage
+    #Data is the wma that includes the most recent game
+    most_recent_game = model_game_data.sort_values('game_date').drop_duplicates(['team'],keep='last')
+    most_recent_game = most_recent_game[['season', 'game_date', 'team','streak_counter_is_win',
+        'wma_10_pace', 'wma_10_efg_pct', 'wma_10_tov_pct', 'wma_10_ft_rate',
+        'wma_10_off_rtg', 'wma_10_opponent_efg_pct', 'wma_10_opponent_tov_pct',
+        'wma_10_opponent_ft_rate', 'wma_10_opponent_off_rtg',
+        'wma_10_starter_minutes_played_proportion', 'wma_10_bench_plus_minus',
+        'wma_10_opponnent_starter_minutes_played_proportion',
+        'wma_10_opponent_bench_plus_minus']]
+    most_recent_game.reset_index(drop=True, inplace=True)
+    most_recent_game.set_index('team', inplace=True)
+    docs = most_recent_game.to_dict(orient='index')
+    firebase_admin.initialize_app()
+    db = firestore.client()
+    for team in most_recent_game.index.unique():
+        doc_ref = db.collection('team_model_data').document(team)
+        doc_ref.set(docs[team])
+
+    #Create new client and load model table to Big Query
     bqclient = bigquery.Client(project=my_project_id)
     #Publish model data
     job_config = bigquery.LoadJobConfig()
     job_config.autodetect='True'
     job_config.create_disposition = 'CREATE_IF_NEEDED'
-    job_config.write_disposition = 'WRITE_APPEND'
+    job_config.write_disposition = 'WRITE_TRUNCATE'
     job_config.time_partitioning = bigquery.TimePartitioning(
         type_=bigquery.TimePartitioningType.DAY,
         field="game_date")
