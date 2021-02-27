@@ -4,6 +4,8 @@ from google.cloud import bigquery
 from datetime import datetime
 import os
 
+## Insert initial setup in entry point function: create_model_data
+
 def convert_to_seconds(x):
   sp = int(x.split(':')[0]) * 60 + int(x.split(':')[1])
   return sp
@@ -248,7 +250,7 @@ def create_model_data():
         f'and ended {model_result.ended} '
         f'loading {model_result.output_rows} row(s) '
         f'to {model_result.destination}')
-        
+
     return model_message
 
 
