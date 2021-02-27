@@ -1,2 +1,4 @@
-google-cloud-bigquery[bqstorage,pandas]
+google-cloud-bigquery
+pandas
 numpy
+pyarrow

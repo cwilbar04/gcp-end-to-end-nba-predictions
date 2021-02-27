@@ -3,7 +3,6 @@ import numpy as np
 from google.cloud import bigquery
 import os
 
-pyarrow.int32()
 ## Insert initial setup in entry point function: create_model_data
 
 def convert_to_seconds(x):
