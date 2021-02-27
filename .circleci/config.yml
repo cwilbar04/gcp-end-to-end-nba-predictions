@@ -116,8 +116,6 @@ jobs:
               fi
                   
   deploy:
-    requires:
-      - build-test
     docker:
       - image: google/cloud-sdk
     steps:
@@ -210,6 +208,8 @@ workflows:
       - build-test
       #- conditional
       - deploy:
+         requires:
+           - build-tsest
          filters:
            branches:
              only:
