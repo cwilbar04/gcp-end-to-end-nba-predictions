@@ -1,3 +1,5 @@
+## Run this function locally after initial data load since it will take more memory than google cloud functions allows
+
 import pandas as pd
 import numpy as np
 from google.cloud import bigquery
@@ -78,7 +80,6 @@ def create_model_data(request):
     client = bigquery.Client(project=my_project_id)
     raw_game_data_table = 'nba.raw_basketballreference_game'
     raw_player_data_table = 'nba.raw_basketballreference_playerbox'
-    games_to_load_to_model_view = 'nba.games_to_load_to_model'
     model_table_name = 'nba.model_game'
 
     # Enter columns to created linearly weighted moving average calculations and number of periods to use
@@ -97,15 +98,14 @@ def create_model_data(request):
         h_ff_pace, h_ff_efg_pct, h_ff_tov_pct,h_ff_orb_pct, h_ff_ft_rate, h_ff_off_rtg
         ,NEEDS_TO_LOAD_TO_MODEL
     FROM `%s` as games
-    INNER JOIN `%s` as load ON games.game_key = load.game_key 
-    ''' % (raw_game_data_table,games_to_load_to_model_view)).to_dataframe()
+    ''' % (raw_game_data_table)).to_dataframe()
 
     player_bq = client.query('''
     SELECT players.game_key, game_date, h_or_a, mp, plus_minus, starter_flag, NEEDS_TO_LOAD_TO_MODEL
     FROM `%s` as players
     INNER JOIN `%s` as load ON players.game_key = load.game_key 
     WHERE mp is not NULL
-    ''' % (raw_player_data_table,games_to_load_to_model_view)).to_dataframe()
+    ''' % (raw_player_data_table)).to_dataframe()
 
     ## Create copies to avoid calling bigquery multiple times when testing - comment out delete while testing
     game = game_bq.copy()
@@ -142,7 +142,6 @@ def create_model_data(request):
     games_by_team_home['opponent_tov_pct'] = game['a_ff_tov_pct']
     games_by_team_home['opponent_ft_rate'] = game['a_ff_ft_rate']
     games_by_team_home['opponent_off_rtg'] = game['a_ff_off_rtg']
-    games_by_team_home['NEEDS_TO_LOAD_TO_MODEL'] = game['NEEDS_TO_LOAD_TO_MODEL']
     games_by_team_home['is_win'] = [1 if x > 0 else 0 for x in games_by_team_home['spread'].astype(int)]
 
 
@@ -163,7 +162,6 @@ def create_model_data(request):
     games_by_team_visitor['opponent_tov_pct'] = game['h_ff_tov_pct']
     games_by_team_visitor['opponent_ft_rate'] = game['h_ff_ft_rate']
     games_by_team_visitor['opponent_off_rtg'] = game['h_ff_off_rtg']
-    games_by_team_visitor['NEEDS_TO_LOAD_TO_MODEL'] = game['NEEDS_TO_LOAD_TO_MODEL']
     games_by_team_visitor['is_win'] = [1 if x > 0 else 0 for x in games_by_team_visitor['spread'].astype(int)]
 
     games_by_team = pd.concat([games_by_team_home,games_by_team_visitor])
@@ -235,8 +233,7 @@ def create_model_data(request):
     del games_by_team_with_wma
 
     #Drop first W rows for each team with no incoming weighted average
-    model_game_data = games_by_team[games_by_team['NEEDS_TO_LOAD_TO_MODEL']==1]
-    model_game_data.drop(columns='NEEDS_TO_LOAD_TO_MODEL', inplace=True)
+    model_game_data = games_by_team.drop_duplicates(subset='incoming_wma_pace').copy()
 
     del games_by_team
     
