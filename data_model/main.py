@@ -66,8 +66,8 @@ def create_linear_weighted_moving_average(data,column,W):
     return data_with_moving_average
 
 def create_model_data(request):
-    
- 
+
+    # Add to avoid error - cloud functions requires input of request
     request_json = request.get_json()
     if request_json:
         print("Payload ignored. This function does not use a payload")
@@ -78,6 +78,7 @@ def create_model_data(request):
     client = bigquery.Client(project=my_project_id)
     raw_game_data_table = 'nba.raw_basketballreference_game'
     raw_player_data_table = 'nba.raw_basketballreference_playerbox'
+    games_to_load_to_model_view = 'nba.games_to_load_to_model'
     model_table_name = 'nba.model_game'
 
     # Enter columns to created linearly weighted moving average calculations and number of periods to use
@@ -90,19 +91,28 @@ def create_model_data(request):
     W = 10
     
     ## Load tables to dataframe
-    game = client.query('''
-    SELECT
-        *
-    FROM
-        `%s`
-    ''' % (raw_game_data_table)).to_dataframe()
+    game_bq = client.query('''
+    SELECT game_date, visitor_team_name, visitor_pts, home_team_name, home_pts, games.game_key, 
+        a_ff_pace, a_ff_efg_pct, a_ff_tov_pct, a_ff_orb_pct, a_ff_ft_rate, a_ff_off_rtg, 
+        h_ff_pace, h_ff_efg_pct, h_ff_tov_pct,h_ff_orb_pct, h_ff_ft_rate, h_ff_off_rtg
+        ,NEEDS_TO_LOAD_TO_MODEL
+    FROM `%s` as games
+    INNER JOIN `%s` as load ON games.game_key = load.game_key 
+    ''' % (raw_game_data_table,games_to_load_to_model_view)).to_dataframe()
 
-    player = client.query('''
-    SELECT
-        *
-    FROM
-        `%s`
-    ''' % (raw_player_data_table)).to_dataframe()
+    player_bq = client.query('''
+    SELECT players.game_key, game_date, h_or_a, mp, plus_minus, starter_flag, NEEDS_TO_LOAD_TO_MODEL
+    FROM `%s` as players
+    INNER JOIN `%s` as load ON players.game_key = load.game_key 
+    WHERE mp is not NULL
+    ''' % (raw_player_data_table,games_to_load_to_model_view)).to_dataframe()
+
+    ## Create copies to avoid calling bigquery multiple times when testing - comment out delete while testing
+    game = game_bq.copy()
+    player = player_bq.copy()
+
+    del game_bq
+    del player_bq
 
     ## Create game variables needed for model
     game['home_spread'] = game['home_pts'].astype(int) - game['visitor_pts'].astype(int)
@@ -132,11 +142,8 @@ def create_model_data(request):
     games_by_team_home['opponent_tov_pct'] = game['a_ff_tov_pct']
     games_by_team_home['opponent_ft_rate'] = game['a_ff_ft_rate']
     games_by_team_home['opponent_off_rtg'] = game['a_ff_off_rtg']
-
-
-    games_by_team_home['is_win'] = ''
-    for i in range(len(game)):
-        games_by_team_home.loc[i,'is_win'] = 1 if game['home_spread'][i].astype(int) > 0 else 0
+    games_by_team_home['NEEDS_TO_LOAD_TO_MODEL'] = game['NEEDS_TO_LOAD_TO_MODEL']
+    games_by_team_home['is_win'] = [1 if x > 0 else 0 for x in games_by_team_home['spread'].astype(int)]
 
 
     games_by_team_visitor = pd.DataFrame()
@@ -156,10 +163,8 @@ def create_model_data(request):
     games_by_team_visitor['opponent_tov_pct'] = game['h_ff_tov_pct']
     games_by_team_visitor['opponent_ft_rate'] = game['h_ff_ft_rate']
     games_by_team_visitor['opponent_off_rtg'] = game['h_ff_off_rtg']
-
-    games_by_team_visitor['is_win'] = ''
-    for i in range(len(game)):
-        games_by_team_visitor.loc[i,'is_win'] = 1 if game['home_spread'][i].astype(int) < 0 else 0
+    games_by_team_visitor['NEEDS_TO_LOAD_TO_MODEL'] = game['NEEDS_TO_LOAD_TO_MODEL']
+    games_by_team_visitor['is_win'] = [1 if x > 0 else 0 for x in games_by_team_visitor['spread'].astype(int)]
 
     games_by_team = pd.concat([games_by_team_home,games_by_team_visitor])
     games_by_team.set_index('game_key', inplace=True)
@@ -214,6 +219,7 @@ def create_model_data(request):
 
     del game_player_stats_opponent
 
+    games_by_team_with_wma = pd.DataFrame()
     #Create data frame with stats needed for model
     for team in games_by_team['team'].unique():
         team_games = games_by_team.loc[games_by_team['team']==team].sort_values(by='game_date')
@@ -223,10 +229,14 @@ def create_model_data(request):
         for col in wma_columns:
             team_games = create_linear_weighted_moving_average(team_games,col,W)
             team_games[f'incoming_wma_{W}_{col}'] = team_games[f'wma_{W}_{col}'].shift()
-        games_by_team = pd.concat([games_by_team, team_games])
+        games_by_team_with_wma = pd.concat([games_by_team_with_wma, team_games])
+    games_by_team = games_by_team_with_wma.copy()
+    
+    del games_by_team_with_wma
 
     #Drop first W rows for each team with no incoming weighted average
-    model_game_data = games_by_team.dropna(subset=['incoming_wma_10_pace'])
+    model_game_data = games_by_team[games_by_team['NEEDS_TO_LOAD_TO_MODEL']==1]
+    model_game_data.drop(column='NEEDS_TO_LOAD_TO_MODEL', inplace=True)
 
     del games_by_team
     
@@ -239,33 +249,33 @@ def create_model_data(request):
     #Create data frame to create firestore collections with data to use in model call
     most_recent_game = model_game_data.sort_values('game_date').drop_duplicates(['team'],keep='last')
     most_recent_game = most_recent_game[['season', 'game_date', 'team','streak_counter_is_win',
-        'wma_10_pace', 'wma_10_efg_pct', 'wma_10_tov_pct', 'wma_10_ft_rate',
-        'wma_10_off_rtg', 'wma_10_opponent_efg_pct', 'wma_10_opponent_tov_pct',
-        'wma_10_opponent_ft_rate', 'wma_10_opponent_off_rtg',
-        'wma_10_starter_minutes_played_proportion', 'wma_10_bench_plus_minus',
-        'wma_10_opponnent_starter_minutes_played_proportion',
-        'wma_10_opponent_bench_plus_minus']]
+           'wma_10_pace', 'wma_10_efg_pct', 'wma_10_tov_pct', 'wma_10_ft_rate',
+           'wma_10_off_rtg', 'wma_10_opponent_efg_pct', 'wma_10_opponent_tov_pct',
+           'wma_10_opponent_ft_rate', 'wma_10_opponent_off_rtg',
+           'wma_10_starter_minutes_played_proportion', 'wma_10_bench_plus_minus',
+           'wma_10_opponnent_starter_minutes_played_proportion',
+           'wma_10_opponent_bench_plus_minus']]
     most_recent_game.reset_index(drop=True, inplace=True)
     most_recent_game.set_index('team', inplace=True)
     docs = most_recent_game.to_dict(orient='index')
-    #firebase_admin.initialize_app()
+    firebase_admin.initialize_app()
     db = firestore.client()
     for team in most_recent_game.index.unique():
         doc_ref = db.collection('team_model_data').document(team.replace('/','\\')) #Teams that changed mid-season have a '/' which firestore interprets as new path
         doc_ref.set(docs[team])
-    
+
     del most_recent_game
 
-    #Create new client and load model table to Big Query
+    #Create new client and load table to Big Query
     bqclient = bigquery.Client(project=my_project_id)
     #Publish model data
     job_config = bigquery.LoadJobConfig()
     job_config.autodetect='True'
     job_config.create_disposition = 'CREATE_IF_NEEDED'
-    job_config.write_disposition = 'WRITE_TRUNCATE'
-#     job_config.time_partitioning = bigquery.TimePartitioning(
-#         type_=bigquery.TimePartitioningType.DAY,
-#         field="game_date")
+    job_config.write_disposition = 'WRITE_APPEND'
+    # job_config.time_partitioning = bigquery.TimePartitioning(
+    #     type_=bigquery.TimePartitioningType.DAY,
+    #     field="game_date")
     ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
     job_config.schema = [
         bigquery.SchemaField('game_key','STRING', 'REQUIRED'),
