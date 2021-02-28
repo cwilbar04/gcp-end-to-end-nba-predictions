@@ -44,3 +44,54 @@ CD set up conditionally based on folder pushes
   - Need to set up anything that needs to be deployed in its own file path
   - Conditionally deploys when push in named file path in the deploy job in the .circleci\app.yaml setup
   - Only deploys if initial test (lint) phase passes
+
+Create Bigquery View to identify games that need to be loaded to the model_game table with following code: 
+ 
+```SQL
+CREATE OR REPLACE VIEW nba.games_to_load_to_model AS
+
+WITH model_load_games as (SELECT 
+distinct left(game_key,length(game_key)-1) as game_key 
+FROM `nba.model_game`
+)
+
+    SELECT distinct order_of_games_per_team.game_key, 
+    CASE WHEN model_load_games.game_key is NULL THEN 1 ELSE 0 END as NEEDS_TO_LOAD_TO_MODEL
+    FROM (
+            SELECT team, game_key, row_number() OVER (PARTITION BY team ORDER BY game_date desc) as game_number
+            FROM (
+                    SELECT
+                        home_team_name as team, game_date, game_key
+                    FROM  `nba.raw_basketballreference_game`
+    
+                    UNION DISTINCT 
+
+                    SELECT
+                        visitor_team_name as team, game_date, game_key
+                    FROM  `nba.raw_basketballreference_game`
+
+                 ) games_per_team
+
+            )order_of_games_per_team
+            
+    LEFT JOIN model_load_games ON model_load_games.game_key = order_of_games_per_team.game_key
+    WHERE 
+        game_number <= 11
+        and team in (
+                    SELECT 
+                        distinct home_team_name as team_to_load
+                    FROM `nba.raw_basketballreference_game`
+                    WHERE 
+                    game_date >= (SELECT date_sub(max(game_date), INTERVAL 1 YEAR) FROM `nba.raw_basketballreference_game` )
+                    and game_key not in (SELECT game_key FROM model_load_games)
+
+                    UNION DISTINCT
+
+                    SELECT 
+                        distinct visitor_team_name as team_to_load
+                    FROM `nba.raw_basketballreference_game`
+                    WHERE 
+                    game_date >= (SELECT date_sub(max(game_date), INTERVAL 1 YEAR) FROM `nba.raw_basketballreference_game`)
+                    and game_key not in (SELECT game_key FROM model_load_games)              
+                    ) 
+```
