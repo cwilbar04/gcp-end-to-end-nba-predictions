@@ -164,6 +164,9 @@ def create_model_data(request):
     games_by_team = pd.concat([games_by_team_home,games_by_team_visitor])
     games_by_team.set_index('game_key', inplace=True)
 
+    del games_by_team_visitor
+    del games_by_team_home
+    
     ## Create player variables needed for model
     # Make game key unique per home/away team
     player['game_key'] = player['game_key'] + player['h_or_a']
@@ -192,9 +195,11 @@ def create_model_data(request):
 
     ## Merge aggregated stats in to games by team dataframe
     games_by_team = pd.merge(games_by_team,game_player_stats, left_index=True, right_index=True,how='inner')
-
+    
     ## Create dataframe to capture opponent aggregated stats
     game_player_stats_opponent = game_player_stats.copy()
+    
+    del game_player_stats
     
     # Reset index so it can be modified to temporarily swith 'h' with 'a'
     game_player_stats_opponent.reset_index(drop=False, inplace=True)
@@ -207,8 +212,7 @@ def create_model_data(request):
     game_player_stats_opponent.set_index('game_key', inplace=True)
     games_by_team = pd.merge(games_by_team,game_player_stats_opponent,left_index=True,right_index=True,how='inner')
 
-    #Create win/loss streak and weighted average columns
-    games_by_team_with_extras = pd.DataFrame()
+    del game_player_stats_opponent
 
     #Create data frame with stats needed for model
     for team in games_by_team['team'].unique():
@@ -219,21 +223,20 @@ def create_model_data(request):
         for col in wma_columns:
             team_games = create_linear_weighted_moving_average(team_games,col,W)
             team_games[f'incoming_wma_{W}_{col}'] = team_games[f'wma_{W}_{col}'].shift()
-        games_by_team_with_extras = pd.concat([games_by_team_with_extras, team_games])
-
-    games_by_team = games_by_team_with_extras.copy()
+        games_by_team = pd.concat([games_by_team, team_games])
 
     #Drop first W rows for each team with no incoming weighted average
     model_game_data = games_by_team.dropna(subset=['incoming_wma_10_pace'])
 
+    del games_by_team
+    
     #Convert data types to prepare for load to bigquery
     model_game_data = model_game_data.astype({'season':int, 'is_win':int})
     
     #Reset index to load game_date
     model_game_data.reset_index(drop=False,inplace=True)
 
-    #Create data frame with most recent game info to be used as input to model on webpage
-    #Data is the wma that includes the most recent game
+    #Create data frame to create firestore collections with data to use in model call
     most_recent_game = model_game_data.sort_values('game_date').drop_duplicates(['team'],keep='last')
     most_recent_game = most_recent_game[['season', 'game_date', 'team','streak_counter_is_win',
         'wma_10_pace', 'wma_10_efg_pct', 'wma_10_tov_pct', 'wma_10_ft_rate',
@@ -245,11 +248,13 @@ def create_model_data(request):
     most_recent_game.reset_index(drop=True, inplace=True)
     most_recent_game.set_index('team', inplace=True)
     docs = most_recent_game.to_dict(orient='index')
-    firebase_admin.initialize_app()
+    #firebase_admin.initialize_app()
     db = firestore.client()
     for team in most_recent_game.index.unique():
-        doc_ref = db.collection('team_model_data').document(team)
+        doc_ref = db.collection('team_model_data').document(team.replace('/','\\')) #Teams that changed mid-season have a '/' which firestore interprets as new path
         doc_ref.set(docs[team])
+    
+    del most_recent_game
 
     #Create new client and load model table to Big Query
     bqclient = bigquery.Client(project=my_project_id)
