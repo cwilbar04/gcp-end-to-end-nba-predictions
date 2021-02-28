@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 from google.cloud import bigquery
-import firebase_admin
-from firebase_admin import firestore
+from google.cloud import firestore
 import os
 
 ## Insert initial setup in entry point function: create_model_data
@@ -258,9 +257,7 @@ def create_model_data(request):
     most_recent_game.reset_index(drop=True, inplace=True)
     most_recent_game.set_index('team', inplace=True)
     docs = most_recent_game.to_dict(orient='index')
-    if not firebase_admin._apps:
-        firebase_admin.initialize_app()
-    db = firestore.client()
+    db = firestore.Client()
     for team in most_recent_game.index.unique():
         doc_ref = db.collection('team_model_data').document(team.replace('/','\\')) #Teams that changed mid-season have a '/' which firestore interprets as new path
         doc_ref.set(docs[team])

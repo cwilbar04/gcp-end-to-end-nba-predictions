@@ -3,8 +3,7 @@
 import pandas as pd
 import numpy as np
 from google.cloud import bigquery
-import firebase_admin
-from firebase_admin import firestore
+from google.cloud import firestore
 import os
 
 ## Setup
@@ -56,7 +55,7 @@ def generate_streak_info(data,column):
     data_with_streak_counter = data.drop(columns = ['start_of_streak','streak_id'] )
     return data_with_streak_counter
 
-def create_linear_weighted_moving_average(data,column,W):
+def create_linear_weighted_moving_average(data,column,weight):
     """
     Parameters
     ----------
@@ -77,8 +76,8 @@ def create_linear_weighted_moving_average(data,column,W):
     """  
     data_with_moving_average = data.copy()
     data_with_moving_average[column] = data_with_moving_average[column].astype(float)
-    weights = np.arange(1,W+1)
-    data_with_moving_average[f'wma_{W}_{column}'] = data_with_moving_average[column].rolling(W).apply(lambda col: np.dot(col, weights)/weights.sum(), raw=True)
+    weights = np.arange(1,weight+1)
+    data_with_moving_average[f'wma_{weight}_{column}'] = data_with_moving_average[column].rolling(weight).apply(lambda col: np.dot(col, weights)/weights.sum(), raw=True)
     return data_with_moving_average
 
 
@@ -188,7 +187,7 @@ game_player_stats = game_player_stats.rename(columns={'plus_minus':'bench_plus_m
 
 ## Merge aggregated stats in to games by team dataframe
 games_by_team = pd.merge(games_by_team,game_player_stats, left_index=True, right_index=True,how='inner')
-games_by_team
+
 ## Create dataframe to capture opponent aggregated stats
 game_player_stats_opponent = game_player_stats.copy()
 
@@ -243,9 +242,7 @@ most_recent_game = most_recent_game[['season', 'game_date', 'team','streak_count
 most_recent_game.reset_index(drop=True, inplace=True)
 most_recent_game.set_index('team', inplace=True)
 docs = most_recent_game.to_dict(orient='index')
-if not firebase_admin._apps:
-    firebase_admin.initialize_app()
-db = firestore.client()
+db = firestore.Client()
 for team in most_recent_game.index.unique():
     doc_ref = db.collection('team_model_data').document(team.replace('/','\\')) #Teams that changed mid-season have a '/' which firestore interprets as new path
     doc_ref.set(docs[team])
