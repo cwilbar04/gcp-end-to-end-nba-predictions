@@ -408,9 +408,9 @@ def  nba_basketballreference_scraper(request):
                     bigquery.SchemaField('load_datetime','TIMESTAMP'),
                     bigquery.SchemaField('game_start_time','STRING')
                 ]
-                job_config.time_partitioning = bigquery.TimePartitioning(
-                    type_=bigquery.TimePartitioningType.DAY,
-                    field="game_date")
+                # job_config.time_partitioning = bigquery.TimePartitioning(
+                #     type_=bigquery.TimePartitioningType.DAY,
+                #     field="game_date")
                 job_game = client.load_table_from_dataframe(pandas_games_data, 'nba.raw_basketballreference_game', job_config=job_config)
                 game_result = job_game.result()
                 game_message = (
@@ -439,9 +439,9 @@ def  nba_basketballreference_scraper(request):
                 bigquery.SchemaField('load_datetime','TIMESTAMP'),
                 bigquery.SchemaField('starter_flag','BOOL')
             ]
-            job_config.time_partitioning = bigquery.TimePartitioning(
-                type_=bigquery.TimePartitioningType.DAY,
-                field="game_date")
+            # job_config.time_partitioning = bigquery.TimePartitioning(
+            #     type_=bigquery.TimePartitioningType.DAY,
+            #     field="game_date")
             job_player = client.load_table_from_dataframe(pandas_player_game_data, 'nba.raw_basketballreference_playerbox', job_config=job_config)
             player_result = job_player.result()
             player_message = (
