@@ -248,7 +248,7 @@ def create_model_data(request):
     most_recent_game.reset_index(drop=True, inplace=True)
     most_recent_game.set_index('team', inplace=True)
     docs = most_recent_game.to_dict(orient='index')
-    #firebase_admin.initialize_app()
+    firebase_admin.initialize_app()
     db = firestore.client()
     for team in most_recent_game.index.unique():
         doc_ref = db.collection('team_model_data').document(team.replace('/','\\')) #Teams that changed mid-season have a '/' which firestore interprets as new path
