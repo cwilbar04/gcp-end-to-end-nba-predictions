@@ -20,13 +20,6 @@ jobs:
     steps:
       - checkout
 
-      # run lints!
-      - run:
-          name: run lint
-          command: |
-            . venv/bin/activate
-            make lint
-
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -44,6 +37,13 @@ jobs:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
+      
+      # run lints!
+      - run:
+          name: run lint
+          command: |
+            . venv/bin/activate
+            make lint
         
       # run tests!
       - run:
