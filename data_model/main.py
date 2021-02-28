@@ -232,12 +232,12 @@ def create_model_data(request):
         games_by_team_with_wma = pd.concat([games_by_team_with_wma, team_games])
     games_by_team = games_by_team_with_wma.copy()
     
+    #Only load rows where not in model
+    model_game_data = games_by_team_with_wma[games_by_team_with_wma['NEEDS_TO_LOAD_TO_MODEL']==1].copy()
+
+    model_game_data.drop(columns=['NEEDS_TO_LOAD_TO_MODEL'], inplace=True)
+
     del games_by_team_with_wma
-
-    #Drop first W rows for each team with no incoming weighted average
-    model_game_data = games_by_team[games_by_team['NEEDS_TO_LOAD_TO_MODEL']==1]
-    model_game_data.drop(columns='NEEDS_TO_LOAD_TO_MODEL', inplace=True)
-
     del games_by_team
     
     #Convert data types to prepare for load to bigquery
@@ -258,7 +258,8 @@ def create_model_data(request):
     most_recent_game.reset_index(drop=True, inplace=True)
     most_recent_game.set_index('team', inplace=True)
     docs = most_recent_game.to_dict(orient='index')
-    firebase_admin.initialize_app()
+    if not firebase_admin._apps:
+        firebase_admin.initialize_app()
     db = firestore.client()
     for team in most_recent_game.index.unique():
         doc_ref = db.collection('team_model_data').document(team.replace('/','\\')) #Teams that changed mid-season have a '/' which firestore interprets as new path
