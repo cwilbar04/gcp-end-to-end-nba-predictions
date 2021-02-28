@@ -20,6 +20,13 @@ jobs:
     steps:
       - checkout
 
+      # run lints!
+      - run:
+          name: run lint
+          command: |
+            . venv/bin/activate
+            make lint
+
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -44,12 +51,6 @@ jobs:
           command: |
             . venv/bin/activate
             make test
-      # run lints!
-      - run:
-          name: run lint
-          command: |
-            . venv/bin/activate
-            make lint
  
   conditional:
     docker:
