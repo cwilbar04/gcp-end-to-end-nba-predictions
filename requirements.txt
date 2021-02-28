@@ -11,6 +11,6 @@ google-cloud-bigquery
 pyarrow
 google-cloud-storage
 google-cloud-bigquery-storage
-firebase-admin
+google-cloud-firestore
 matplotlib
 seaborn

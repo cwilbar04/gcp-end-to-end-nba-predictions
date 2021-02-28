@@ -94,4 +94,14 @@ FROM `nba.model_game`
                     game_date >= (SELECT date_sub(max(game_date), INTERVAL 1 YEAR) FROM `nba.raw_basketballreference_game`)
                     and game_key not in (SELECT game_key FROM model_load_games)              
                     ) 
-```
+``` 
+ 
+Create static training data by executing the following query in the big query console (or progmatically using python): 
+```SQL
+EXECUTE IMMEDIATE CONCAT('CREATE OR REPLACE TABLE `nba.model_training_data_', FORMAT_DATE('%Y%m%d', CURRENT_DATE())
+    ,'` AS SELECT game_key, spread, season,game_date,is_home_team,incoming_is_win_streak,incoming_wma_10_pace',
+    ',incoming_wma_10_efg_pct,incoming_wma_10_tov_pct,incoming_wma_10_ft_rate,incoming_wma_10_off_rtg,incoming_wma_10_opponent_efg_pct',
+    ',incoming_wma_10_opponent_tov_pct,incoming_wma_10_opponent_ft_rate,incoming_wma_10_opponent_off_rtg',
+    ',incoming_wma_10_starter_minutes_played_proportion,incoming_wma_10_bench_plus_minus,incoming_wma_10_opponnent_starter_minutes_played_proportion',
+    ',incoming_wma_10_opponent_bench_plus_minus FROM `nba.model_game` ');
+``` 
