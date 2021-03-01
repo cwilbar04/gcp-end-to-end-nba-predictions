@@ -1,8 +1,7 @@
 from model import predicted_pointspread
 from flask import Flask, render_template, request#, url_for, redirect
 from google.cloud import storage
-import firebase_admin
-from firebase_admin import firestore
+from google.cloud import firestore
 import json
 import os
 
@@ -51,8 +50,7 @@ def ChooseTeams():
     #                ]
     
     ## Temporarily use firebase for testing. Consider using static list to save resource cost
-    firebase_admin.initialize_app()
-    db = firestore.client()
+    db = firestore.Client()
     docs = db.collection('team_model_data').stream()
     nba_teams = []
     for doc in docs:

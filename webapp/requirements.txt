@@ -2,4 +2,4 @@ flask
 pandas
 numpy
 google-cloud-storage
-firebase-admin
+google-cloud-firestore
