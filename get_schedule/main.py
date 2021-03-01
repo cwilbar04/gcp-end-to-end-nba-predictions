@@ -102,3 +102,5 @@ def write_to_bucket(request):
     bucket_name = os.environ.get("CLOUD_STORAGE_BUCKET")
     bucket = client.bucket(bucket_name)
     bucket.blob('static/upcoming.json').upload_from_string(game_date.to_json(), 'text/json')
+
+    return 'Successfully updated bucket with upcoming games'
