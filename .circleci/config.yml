@@ -129,13 +129,14 @@ jobs:
             echo 'export SCRAPER_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)' >> $BASH_ENV
             echo 'export WEBAPP_COMMIT=$(git log -1 --format=format:%H --full-diff webapp)' >> $BASH_ENV
             echo 'export DATA_MODEL_COMMIT=$(git log -1 --format=format:%H --full-diff data_model)' >> $BASH_ENV
+            echo 'export GET_SCHEDULE_COMMIT=$(git log -1 --format=format:%H --full-diff get_schedule)' >> $BASH_ENV
             source $BASH_ENV
 
       - run:
           name: Exit gracefully if no changes to any relevant folder
           command: |
             case $LATEST_COMMIT in
-              "$SCRAPER_COMMIT" | "$WEBAPP_COMMIT" | "$DATA_MODEL_COMMIT") echo 'At least one relevant folder changed - execute deploy';;
+              "$SCRAPER_COMMIT" | "$WEBAPP_COMMIT" | "$DATA_MODEL_COMMIT" | "$GET_SCHEDULE_COMMIT" ) echo 'At least one relevant folder changed - execute deploy';;
               *) circleci-agent step halt;;
             esac  
                 
@@ -189,6 +190,28 @@ jobs:
                 #   --member=allUsers \
                 #   --role=roles/cloudfunctions.invoker \
                 #   --project=$GCLOUD_PROJECT_ID
+            fi
+
+            if [ $LATEST_COMMIT = $GET_SCHEDULE_COMMIT ];
+              then
+                # Deploy command
+                FUNCTION_NAME=nba_get_upcoming_games
+                gcloud functions deploy $FUNCTION_NAME \
+                  --source=./get_schedule \
+                  --project=$GCLOUD_PROJECT_ID \
+                  --allow-unauthenticated \
+                  --entry-point=create_model_data \
+                  --memory=128MB \
+                  --runtime=python38 \
+                  --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
+                  --trigger-http \
+                  --timeout=60
+
+                # Need to figure out how to set this in the deploy
+                gcloud functions add-iam-policy-binding nba_get_upcoming_games \
+                  --member=allUsers \
+                  --role=roles/cloudfunctions.invoker \
+                  --project=$GCLOUD_PROJECT_ID
             fi
 
 
