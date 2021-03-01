@@ -93,6 +93,7 @@ def write_to_bucket(request):
     except Exception as e:
         raise ValueError("Invalid input. Please provide ScheduleDays as an integer") from e
     
+    # Calculate begin/end dates based on schedule days
     startDate = (datetime.now()).date()
     endDate = (startDate + timedelta(days=schedule_days))
     schedule = get_games(startDate,endDate) 
