@@ -1,0 +1,4 @@
+requests
+BeautifulSoup
+pandas
+google-cloud-storage
