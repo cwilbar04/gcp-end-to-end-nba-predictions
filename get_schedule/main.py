@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import pandas as pd
 from google.cloud import storage
+import os
 
 
 def get_games(startDate,endDate):
