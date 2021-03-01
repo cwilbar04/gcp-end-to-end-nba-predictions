@@ -97,6 +97,7 @@ FROM `nba.model_game`
 ``` 
  
 Create static training data by executing the following query in the big query console (or progmatically using python): 
+
 ```SQL
 EXECUTE IMMEDIATE CONCAT('CREATE OR REPLACE TABLE `nba.model_training_data_', FORMAT_DATE('%Y%m%d', CURRENT_DATE())
     ,'` AS SELECT game_key, spread, season,game_date,is_home_team,incoming_is_win_streak,incoming_wma_10_pace',
@@ -105,3 +106,19 @@ EXECUTE IMMEDIATE CONCAT('CREATE OR REPLACE TABLE `nba.model_training_data_', FO
     ',incoming_wma_10_starter_minutes_played_proportion,incoming_wma_10_bench_plus_minus,incoming_wma_10_opponnent_starter_minutes_played_proportion',
     ',incoming_wma_10_opponent_bench_plus_minus FROM `nba.model_game` ');
 ``` 
+ 
+Create AutoML Regression Model by running following code in big query console (or programatically using python): 
+
+```SQL
+CREATE OR REPLACE MODEL nba.automl_regression
+  OPTIONS(model_type='AUTOML_REGRESSOR', BUDGET_HOURS = 1,
+  OPTIMIZATION_OBJECTIVE = 'MINIMIZE_MAE',  input_label_cols=['spread'])
+AS SELECT spread, is_home_team,incoming_is_win_streak,incoming_wma_10_pace
+    ,incoming_wma_10_efg_pct,incoming_wma_10_tov_pct,incoming_wma_10_ft_rate,incoming_wma_10_off_rtg
+    ,incoming_wma_10_opponent_efg_pct,incoming_wma_10_opponent_tov_pct,incoming_wma_10_opponent_ft_rate
+    ,incoming_wma_10_opponent_off_rtg,incoming_wma_10_starter_minutes_played_proportion
+    ,incoming_wma_10_bench_plus_minus,incoming_wma_10_opponnent_starter_minutes_played_proportion
+    ,incoming_wma_10_opponent_bench_plus_minus FROM `nba.model_training_data_20210228`;
+``` 
+ 
+
