@@ -96,6 +96,7 @@ def write_to_bucket(request):
     endDate = (startDate + timedelta(days=schedule_days))
     schedule = get_games(startDate,endDate) 
     
+    # Upload schedule to default app engine storage bucket
     game_date = pd.DataFrame(schedule)
     client = storage.Client()
     bucket_name = os.environ.get("CLOUD_STORAGE_BUCKET")
