@@ -201,11 +201,12 @@ jobs:
                   --project=$GCLOUD_PROJECT_ID \
                   --allow-unauthenticated \
                   --entry-point=write_to_bucket \
-                  --memory=128MB \
+                  --memory=512MB \
                   --runtime=python38 \
                   --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
                   --trigger-http \
-                  --timeout=60
+                  --timeout=60 \
+                  --set-env-vars = [CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET]
 
                 # Need to figure out how to set this in the deploy
                 gcloud alpha functions add-iam-policy-binding nba_get_upcoming_games \
