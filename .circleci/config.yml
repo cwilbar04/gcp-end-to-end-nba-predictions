@@ -163,11 +163,10 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                # Need to figure out how to set this in the deploy
-                # gcloud functions add-iam-policy-binding nba_basketball_reference_scraper \
-                #   --member=allUsers \
-                #   --role=roles/cloudfunctions.invoker \
-                #   --project=$GCLOUD_PROJECT_ID
+                gcloud alpha functions add-iam-policy-binding nba_get_upcoming_games \
+                  --member=allUsers \
+                  --role=roles/cloudfunctions.invoker \
+                  --project=$GCLOUD_PROJECT_ID
             fi
 
             if [ $LATEST_COMMIT = $DATA_MODEL_COMMIT ];
@@ -185,11 +184,10 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                # Need to figure out how to set this in the deploy
-                # gcloud functions add-iam-policy-binding nba_basketball_reference_scraper \
-                #   --member=allUsers \
-                #   --role=roles/cloudfunctions.invoker \
-                #   --project=$GCLOUD_PROJECT_ID
+                gcloud alpha functions add-iam-policy-binding nba_get_upcoming_games \
+                  --member=allUsers \
+                  --role=roles/cloudfunctions.invoker \
+                  --project=$GCLOUD_PROJECT_ID
             fi
 
             if [ $LATEST_COMMIT = $GET_SCHEDULE_COMMIT ];
@@ -206,9 +204,8 @@ jobs:
                   --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
                   --trigger-http \
                   --timeout=60 \
-                  --set-env-vars=[CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET]
+                  --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET
 
-                # Need to figure out how to set this in the deploy
                 gcloud alpha functions add-iam-policy-binding nba_get_upcoming_games \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
