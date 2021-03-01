@@ -80,6 +80,7 @@ def get_games(startDate,endDate):
 
 def write_to_bucket(request):
     
+    # Use schedule days if in request, otherwise default to 2 weeks (14 days)
     try:
         if type(request) == 'dict':
             request_json = request
