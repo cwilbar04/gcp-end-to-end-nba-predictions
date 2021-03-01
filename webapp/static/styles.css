@@ -1,0 +1,38 @@
+ul {
+  list-style-type: none;
+  margin: 1px;
+  padding: 1px;
+  overflow: hidden;
+  border: 2px solid #FFFFFF;
+  background-color: #17408B;
+  position: fixed;
+  top: 0;
+  width: 100%;
+ }
+ 
+ li {
+  float: left;
+  border-right: 2px solid #FFFFFF;
+ }
+ 
+ li a {
+  display: block;
+  color: white;
+  text-align: left;
+  padding: 15px 17px;
+  text-decoration: none;
+ }
+ 
+ /* Links will change color when hovered over */
+ li a:hover {
+  background-color: #C9082A;
+ }
+ 
+ .active {
+  background-color: #C9082A;
+ }
+
+ body {
+  font-family: Georgia, serif;;
+  text-align: center;
+}

@@ -1,11 +1,19 @@
 <!doctype html>
 <html>
 <head>
+  <script type="text/javascript" src="{{ url_for('static', filename='scripts.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <title>Home</title>
-  <script src="{{ url_for('static', filename='staticscript.js') }}"></script>
-  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <ul>
+		<li><a class="active" href="{{ url_for('home')}}">Home Page</a></li>
+    <li><a href="{{url_for('ChooseTeams')}}">Choose Teams</a></li>
+    <li><a href="{{url_for('UpcomingGames')}}">Upcoming Games</a></li>
+    <li style="float: right;"><a href="https://github.com/cwilbar04/nba-predictions">Github</a></li>
+	</ul>
+  
+  <br><br><br><br>
 
   <h1>Welcome to the NBA Predictions Home Page!</h1>
 

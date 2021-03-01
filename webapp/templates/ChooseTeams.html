@@ -1,24 +1,33 @@
 <!doctype html>
 <html>
-<head>
-  <title>Choose Teams</title>
-  <script src="{{ url_for('static', filename='staticscript.js') }}"></script>
-  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+  <head>
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Home</title>
+  </head>
+  <body>
+    <ul>
+      <li><a href="{{ url_for('home')}}">Home Page</a></li>
+      <li><a class="active" href="{{url_for('ChooseTeams')}}">Choose Teams</a></li>
+      <li><a href="{{url_for('UpcomingGames')}}">Upcoming Games</a></li>
+      <li style="float: right;"><a href="https://github.com/cwilbar04/nba-predictions">Github</a></li>
+    </ul><br><br><br><br>
 
   <h1>Predict Point Spread for Any Game!</h1>
   <h3>Enter Home and Away Teams to Predict Point Spread</h3>
 
   <form method="POST">
-  <label for="HomeTeam:">Home Team:</label>
-  <select id="HomeTeam" name="HomeTeam">
+  <label for="AwayTeam:">Away Team:</label>
+  <select id="AwayTeam" name="AwayTeam">
     {% for team in teams %}
     <option value="{{ team }}">{{ team }}</option>
     {% endfor %}
-  </select><br><br>
-  <label for="AwayTeam:">Away Team:</label>
-  <select id="AwayTeam" name="AwayTeam">
+  </select>
+  <br>
+  <h5> vs. </h5>
+  <br>
+  <label for="HomeTeam:">Home Team:</label>
+  <select id="HomeTeam" name="HomeTeam">
     {% for team in teams %}
     <option value="{{ team }}">{{ team }}</option>
     {% endfor %}

@@ -59,16 +59,16 @@ def ChooseTeams():
 
 @app.route('/ChooseTeams', methods=['POST'])
 def ChooseTeamsPost():
-    form_dict = {'HomeTeam':request.form['HomeTeam'], 'AwayTeam':request.form['AwayTeam']}
-    final_output = predicted_pointspread(form_dict)
+    teams = {'HomeTeam':request.form['HomeTeam'], 'AwayTeam':request.form['AwayTeam']}
+    final_output = predicted_pointspread(teams)
     return render_template('ChooseTeamsPost.html', final_output=final_output)
 
 @app.route('/UpcomingGames')
 def UpcomingGames():
     client = storage.Client()
-    bucket_name = os.environ.get("CLOUD_STORAGE_BUCKET") #'nba-predictions-dev.appspot.com'os.environ.get("CLOUD_STORAGE_BUCKET")
+    bucket_name = 'nba-predictions-dev.appspot.com' #os.environ.get("CLOUD_STORAGE_BUCKET") #'nba-predictions-dev.appspot.com'
     bucket = client.bucket(bucket_name)
-    blob = bucket.blob('static/monday.json').download_as_string()
+    blob = bucket.blob('static/upcoming.json').download_as_string()
     data = json.loads(blob.decode("utf-8").replace("'",'"'))
     home_teams = list(data['home_team_name'].values())
     away_teams = list(data['visitor_team_name'].values())
@@ -76,7 +76,7 @@ def UpcomingGames():
     game_date = list(data['game_date'].values())
     game_start_time = list(data['game_start_time'].values())
     games = []
-    for i in range(len(home_teams)-1):
+    for i in range(len(home_teams)):
         games.append(f'{away_teams[i]} vs. {home_teams[i]} at {game_start_time[i]} on {game_day[i]}, {game_date[i]}')
     return render_template('UpcomingGames.html', games=games, home_teams = home_teams, away_teams=away_teams, game_day=game_day, game_date = game_date, game_start_time = game_start_time)
 
