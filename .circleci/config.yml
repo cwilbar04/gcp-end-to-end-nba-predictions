@@ -200,7 +200,7 @@ jobs:
                   --source=./get_schedule \
                   --project=$GCLOUD_PROJECT_ID \
                   --allow-unauthenticated \
-                  --entry-point=create_model_data \
+                  --entry-point=write_to_bucket \
                   --memory=128MB \
                   --runtime=python38 \
                   --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
@@ -208,7 +208,7 @@ jobs:
                   --timeout=60
 
                 # Need to figure out how to set this in the deploy
-                gcloud functions add-iam-policy-binding nba_get_upcoming_games \
+                gcloud alpha functions add-iam-policy-binding nba_get_upcoming_games \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID
