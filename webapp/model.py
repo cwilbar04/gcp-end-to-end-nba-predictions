@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from google.cloud import firestore
 from google.cloud import bigquery
 
