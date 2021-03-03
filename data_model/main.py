@@ -224,7 +224,7 @@ def create_model_data(request):
         team_games = games_by_team.loc[games_by_team['team']==team].sort_values(by='game_date')
         team_games = generate_streak_info(team_games,'is_win')
         team_games['streak_counter_is_win'] = [x * -1 if y == 0 else x for x,y in zip(team_games['streak_counter_is_win'],team_games['is_win'])]
-        team_games['incoming_is_win_streak'] = team_games['streak_counter_is_win'].shift()
+        team_games['incoming_is_win_streak'] = team_games['streak_counter_is_win'].shift(fill_value=0)
         for col in wma_columns:
             team_games = create_linear_weighted_moving_average(team_games,col,W)
             team_games[f'incoming_wma_{W}_{col}'] = team_games[f'wma_{W}_{col}'].shift()
