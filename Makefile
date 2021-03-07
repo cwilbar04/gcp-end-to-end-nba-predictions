@@ -13,7 +13,7 @@ venv_create:
 	python -m venv ..\.venv
 
 venv_activate:
-	..\.venv\Scripts\activate
+	.\..\.venv\Scripts\activate
 
 venv: venv_create venv_activate
 
