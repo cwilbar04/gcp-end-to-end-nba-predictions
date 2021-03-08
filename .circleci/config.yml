@@ -281,7 +281,7 @@ workflows:
           filters:
             branches:
               only:
-                - test
+                - not_a_branch
       - test:
           requires:
             - deploy-test
