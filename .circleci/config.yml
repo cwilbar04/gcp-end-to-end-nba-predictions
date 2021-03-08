@@ -268,9 +268,9 @@ jobs:
           working_directory: ./test_github
           command: |
             git checkout -q main
-            git pull --tags origin test
+            git pull --tags origin test --no-commit && git commit -m "Merge"
             git pull --tags origin main
-            git push origin main:main
+            git push
             # git branch
             # git remote
             # git pull origin test:main
