@@ -268,7 +268,11 @@ jobs:
           working_directory: ./test_github
           command: |
             git checkout main
+            git branch
+            git remote
             git pull origin test:main
+            git branch
+            git remote
             #git commit -m "CircleCI CD Deploy"
             git push --force
     
