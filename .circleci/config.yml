@@ -270,7 +270,7 @@ jobs:
             git checkout main
             git pull origin test:main
             #git commit -m "CircleCI CD Deploy"
-            git push
+            git push --force
     
 workflows:
   version: 2.1
