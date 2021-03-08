@@ -288,10 +288,10 @@ workflows:
           filters:
             branches:
               only:
-                - test
+                - not_a_branch
       - push_main:
           requires:
-            - test
+            - build-lint
           filters:
             branches:
               only:
