@@ -268,17 +268,9 @@ jobs:
           working_directory: ./test_github
           command: |
             git checkout -q main
-            git pull --tags origin test --no-commit && git commit -m "Merge"
+            git pull --tags origin test --no-commit && git commit -m "CircleCI Continuous Deployment Merge from Test after passing tests"
             git pull --tags origin main
             git push
-            # git branch
-            # git remote
-            # git pull origin test:main
-            # git branch
-            # git remote
-            # git branch -avv
-            # #git commit -m "CircleCI CD Deploy"
-            # git push --force
     
 workflows:
   version: 2.1
