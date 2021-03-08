@@ -264,7 +264,7 @@ jobs:
             git config --global user.name $GITHUB_USER_NAME
 
       - run:
-          name: "Push to main"
+          name: "Push to main test"
           working_directory: ./test_github
           command: |
             git push origin test:main
