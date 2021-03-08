@@ -267,14 +267,16 @@ jobs:
           name: "Push to main"
           working_directory: ./test_github
           command: |
-            git checkout main
-            git branch
-            git remote
-            git pull origin test:main
-            git branch
-            git remote
-            #git commit -m "CircleCI CD Deploy"
-            git push --force
+            git push origin test:main
+            # git checkout main
+            # git branch
+            # git remote
+            # git pull origin test:main
+            # git branch
+            # git remote
+            # git branch -avv
+            # #git commit -m "CircleCI CD Deploy"
+            # git push --force
     
 workflows:
   version: 2.1
