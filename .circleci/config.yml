@@ -267,7 +267,7 @@ jobs:
           name: "Push to main"
           working_directory: ./test_github
           command: |
-            git merge origin test
+            git pull test
             git commit -m "CircleCI CD Deploy"
             git push origin main
     
