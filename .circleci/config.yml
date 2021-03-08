@@ -4,16 +4,9 @@
 #
 version: 2.1
 jobs:
-  build-test:
+  build-lint:
     docker:
-      # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
       - image: circleci/python:3.8
-      
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
 
     working_directory: ~/repo
 
@@ -33,6 +26,7 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             make install
+
       - save_cache:
           paths:
             - ./venv
@@ -44,79 +38,8 @@ jobs:
           command: |
             . venv/bin/activate
             make lint
-        
-      # run tests!
-      - run:
-          name: run tests
-          command: |
-            . venv/bin/activate
-            make test
- 
-  conditional:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - run:
-          name: Set Environment Variables
-          command: |
-            #latest commit
-            echo 'export LATEST_COMMIT=$(git rev-parse HEAD)' >> $BASH_ENV
-            echo 'export FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)' >> $BASH_ENV
-            echo 'export FOLDER2_COMMIT=$(git log -1 --format=format:%H --full-diff static)' >> $BASH_ENV
-            echo 'export FOLDER3_COMMIT=$(git log -1 --format=format:%H --full-diff .circleci)' >> $BASH_ENV
-            source $BASH_ENV
-      
-      - run:
-          name: Exit gracefully if no changes to any relevant folder
-          command: |
-            case $LATEST_COMMIT in
-              "$FOLDER1_COMMIT" | "$FOLDER2_COMMIT" | "$FOLDER3_COMMIT") echo 'At least one relevant folder changed - execute deploy';;
-              *) circleci-agent step halt;;
-            esac  
-
-      - run:
-          name: Just testing 1
-          command: |
-              if [ $FOLDER1_COMMIT = $LATEST_COMMIT ];
-                then
-                  echo "Lastest commit in scraper so run the deploy task"
-                  echo $FOLDER1_COMMIT
-                  echo $LATEST_COMMIT
-                else
-                  echo "Lastest commit not in scraper or code just doesn't work"
-                  echo $FOLDER1_COMMIT
-                  echo $LATEST_COMMIT
-              fi
-      - run:
-          name: Just testing 2
-          command: |
-              if [ $FOLDER2_COMMIT = $LATEST_COMMIT ];
-                then
-                  echo "Lastest commit in static so run the deploy task"
-                  echo $FOLDER2_COMMIT
-                  echo $LATEST_COMMIT
-                else
-                  echo "Lastest commit not in static or code just doesn't work"
-                  echo $FOLDER2_COMMIT
-                  echo $LATEST_COMMIT
-              fi
-  
-      - run:
-          name: Just testing 3
-          command: |           
-              if [ $FOLDER3_COMMIT = $LATEST_COMMIT ];
-                then
-                  echo "Lastest commit in .circleci so run the deploy task"
-                  echo $FOLDER3_COMMIT
-                  echo $LATEST_COMMIT
-                else
-                  echo "Lastest commit not in .circleci or code just doesn't work"
-                  echo $FOLDER3_COMMIT
-                  echo $LATEST_COMMIT
-              fi
-                  
-  deploy:
+             
+  deploy-dev:
     docker:
       - image: google/cloud-sdk
     steps:
@@ -163,7 +86,7 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                gcloud alpha functions add-iam-policy-binding nba_get_upcoming_games \
+                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID
@@ -184,7 +107,7 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                gcloud alpha functions add-iam-policy-binding nba_get_upcoming_games \
+                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID
@@ -206,13 +129,11 @@ jobs:
                   --timeout=60 \
                   --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET
 
-                gcloud alpha functions add-iam-policy-binding nba_get_upcoming_games \
+                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID
             fi
-
-
 
       - run:
           name: Deploy Web Service to Google App Engine
@@ -223,16 +144,157 @@ jobs:
                 gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID --promote --quiet
             fi
 
+  deploy-test:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run:
+          name: Authorize GCloud Command Line Tool
+          command: |
+            echo $CIRCLE_CI_DEPLOYER_TEST_KEY | gcloud auth activate-service-account $CIRCLE_CI_DEPLOYER_TEST --key-file=-
+        
+      - run:
+          name: Deploy Google Cloud Functions
+          command: |
+            # Deploy command
+            FUNCTION_NAME=nba_basketball_reference_scraper
+            gcloud functions deploy $FUNCTION_NAME \
+              --source=./scraper \
+              --project=$GCLOUD_PROJECT_ID_TEST \
+              --allow-unauthenticated \
+              --entry-point=nba_basketballreference_scraper \
+              --memory=1024MB \
+              --runtime=python38 \
+              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_TEST \
+              --trigger-http \
+              --timeout=300
+
+            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+              --member=allUsers \
+              --role=roles/cloudfunctions.invoker \
+              --project=$GCLOUD_PROJECT_ID_TEST
+
+            FUNCTION_NAME=nba_model_game_refresh
+            gcloud functions deploy $FUNCTION_NAME \
+              --source=./data_model \
+              --project=$GCLOUD_PROJECT_ID_TEST \
+              --allow-unauthenticated \
+              --entry-point=create_model_data \
+              --memory=1024MB \
+              --runtime=python38 \
+              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_TEST \
+              --trigger-http \
+              --timeout=300
+
+            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+              --member=allUsers \
+              --role=roles/cloudfunctions.invoker \
+              --project=$GCLOUD_PROJECT_ID_TEST
+
+            # Deploy command
+            FUNCTION_NAME=nba_get_upcoming_games
+            gcloud functions deploy $FUNCTION_NAME \
+              --source=./get_schedule \
+              --project=$GCLOUD_PROJECT_ID_TEST \
+              --allow-unauthenticated \
+              --entry-point=write_to_bucket \
+              --memory=512MB \
+              --runtime=python38 \
+              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_TEST \
+              --trigger-http \
+              --timeout=60 \
+              --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET
+
+            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+              --member=allUsers \
+              --role=roles/cloudfunctions.invoker \
+              --project=$GCLOUD_PROJECT_ID_TEST
+            
+      - run:
+          name: Deploy Web Service to Google App Engine
+          command:
+            # Deploy command
+            gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_TEST --promote --quiet           
+  test:
+    docker:
+      - image: circleci/python:3.8
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      
+      # run tests!
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            make test
+  
+  push_main:
+
+    docker:
+      - image: cimg/base:2020.01
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout:
+          path: ./test_github
+
+      - run:
+          name: "Configure Git"
+          working_directory: ./test_github
+          command: |
+            git config --global user.email $GITHUB_USER_EMAIL
+            git config --global user.name $GITHUB_USER_NAME
+
+      - run:
+          name: "Push to main"
+          working_directory: ./test_github
+          command: |
+            git push origin main
+    
 workflows:
   version: 2.1
-  build-test-and-deploy:
+  build-lint:
     jobs:
-      - build-test
-      #- conditional
-      - deploy:
+      - build-lint
+      - deploy-dev:
          requires:
-           - build-test
+           - build-lint
          filters:
            branches:
              only:
-               - main
+               - dev
+      - deploy-test:
+          requires:
+            - build-lint
+          filters:
+            branches:
+              only:
+                - not_a_branch
+      - test:
+          requires:
+            - deploy-test
+          filters:
+            branches:
+              only:
+                - not_a_branch
+      - push_main:
+          requires:
+            - build-lint
+          filters:
+            branches:
+              only:
+                - test
+          
+
