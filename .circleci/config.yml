@@ -267,8 +267,10 @@ jobs:
           name: "Push to main test"
           working_directory: ./test_github
           command: |
-            git push origin test:main
-            # git checkout main
+            git checkout -q main
+            git pull --tags origin test
+            git pull --tags origin main
+            git push origin main:main
             # git branch
             # git remote
             # git pull origin test:main
