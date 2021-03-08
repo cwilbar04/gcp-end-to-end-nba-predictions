@@ -368,7 +368,7 @@ workflows:
                 - test
       - push_main:
           requires:
-            - build-lint
+            - test
           filters:
             branches:
               only:
