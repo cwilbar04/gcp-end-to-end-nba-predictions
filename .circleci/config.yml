@@ -247,7 +247,9 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - run:
+      - checkout
+          path: ./test_github
+      - run: 
           name: "checkout main"
           working_directory: ./test_github
           command:
@@ -271,7 +273,7 @@ workflows:
   version: 2.1
   build-lint:
     jobs:
-      - build-lint
+      #- build-lint
       - deploy-dev:
          requires:
            - build-lint
@@ -294,8 +296,8 @@ workflows:
               only:
                 - not_a_branch
       - push_main:
-          requires:
-            - build-lint
+          #requires:
+            #- build-lint
           filters:
             branches:
               only:
