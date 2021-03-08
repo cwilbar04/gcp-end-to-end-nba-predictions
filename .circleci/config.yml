@@ -190,7 +190,6 @@ jobs:
               --member=allUsers \
               --role=roles/cloudfunctions.invoker \
               --project=$GCLOUD_PROJECT_ID_TEST
-            fi
 
             # Deploy command
             FUNCTION_NAME=nba_get_upcoming_games
@@ -213,9 +212,9 @@ jobs:
             
       - run:
           name: Deploy Web Service to Google App Engine
+          command:
             # Deploy command
-            gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_TEST --promote --quiet
-            
+            gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_TEST --promote --quiet           
   test:
     docker:
       - image: circleci/python:3.8
