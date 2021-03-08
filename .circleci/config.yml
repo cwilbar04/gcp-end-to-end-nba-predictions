@@ -254,7 +254,7 @@ jobs:
           name: "checkout main"
           working_directory: ./test_github
           command:
-            git checkout origin main
+            git fetch origin main
 
       - run:
           name: "Configure Git"
