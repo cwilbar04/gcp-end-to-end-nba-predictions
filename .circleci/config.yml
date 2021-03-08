@@ -215,7 +215,8 @@ jobs:
           name: Deploy Web Service to Google App Engine
           command:
             # Deploy command
-            gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_TEST --promote --quiet           
+            gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_TEST --promote --quiet 
+
   test:
     docker:
       - image: circleci/python:3.8
@@ -265,6 +266,79 @@ jobs:
             git pull --tags origin test --no-commit && git commit -m "CircleCI Continuous Deployment Merge from Test after passing tests"
             git pull --tags origin main
             git push
+
+  deploy-prod:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run:
+          name: Authorize GCloud Command Line Tool
+          command: |
+            echo $CIRCLE_CI_DEPLOYER_PROD_KEY | gcloud auth activate-service-account $CIRCLE_CI_DEPLOYER_PROD --key-file=-
+        
+      - run:
+          name: Deploy Google Cloud Functions
+          command: |
+            # Deploy command
+            FUNCTION_NAME=nba_basketball_reference_scraper
+            gcloud functions deploy $FUNCTION_NAME \
+              --source=./scraper \
+              --project=$GCLOUD_PROJECT_ID_PROD \
+              --allow-unauthenticated \
+              --entry-point=nba_basketballreference_scraper \
+              --memory=1024MB \
+              --runtime=python38 \
+              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_PROD \
+              --trigger-http \
+              --timeout=300
+
+            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+              --member=allUsers \
+              --role=roles/cloudfunctions.invoker \
+              --project=$GCLOUD_PROJECT_ID_PROD
+
+            FUNCTION_NAME=nba_model_game_refresh
+            gcloud functions deploy $FUNCTION_NAME \
+              --source=./data_model \
+              --project=$GCLOUD_PROJECT_ID_PROD \
+              --allow-unauthenticated \
+              --entry-point=create_model_data \
+              --memory=1024MB \
+              --runtime=python38 \
+              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_PROD \
+              --trigger-http \
+              --timeout=300
+
+            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+              --member=allUsers \
+              --role=roles/cloudfunctions.invoker \
+              --project=$GCLOUD_PROJECT_ID_PROD
+
+            # Deploy command
+            FUNCTION_NAME=nba_get_upcoming_games
+            gcloud functions deploy $FUNCTION_NAME \
+              --source=./get_schedule \
+              --project=$GCLOUD_PROJECT_ID_PROD \
+              --allow-unauthenticated \
+              --entry-point=write_to_bucket \
+              --memory=512MB \
+              --runtime=python38 \
+              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_PROD \
+              --trigger-http \
+              --timeout=60 \
+              --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET
+
+            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+              --member=allUsers \
+              --role=roles/cloudfunctions.invoker \
+              --project=$GCLOUD_PROJECT_ID_PROD
+            
+      - run:
+          name: Deploy Web Service to Google App Engine
+          command:
+            # Deploy command
+            gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_PROD --promote --quiet 
     
 workflows:
   version: 2.1
@@ -299,5 +373,8 @@ workflows:
             branches:
               only:
                 - test
+      - deploy-prod:
+          requires:
+            - push_main
           
 
