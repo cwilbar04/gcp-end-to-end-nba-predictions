@@ -259,7 +259,7 @@ jobs:
 
       - run:
           name: "Push to main"
-          working_directory: ./sources_github
+          working_directory: ./test_github
           command: |
             git push origin main
     
