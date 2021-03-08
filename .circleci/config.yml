@@ -268,7 +268,7 @@ jobs:
           working_directory: ./test_github
           command: |
             git merge origin test
-            git commit
+            git commit -m "CircleCI CD Deploy"
             git push origin main
     
 workflows:
