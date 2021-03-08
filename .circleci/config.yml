@@ -26,6 +26,7 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             make install
+
       - save_cache:
           paths:
             - ./venv
@@ -237,7 +238,31 @@ jobs:
           command: |
             . venv/bin/activate
             make test
+  
+  push_main:
 
+    docker:
+      - image: cimg/base:2020.01
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout:
+          path: ./test_github
+
+      - run:
+          name: "Configure Git"
+          working_directory: ./test_github
+          command: |
+            git config --global user.email $GITHUB_USER_EMAIL
+            git config --global user.name $GITHUB_USER_NAME
+
+      - run:
+          name: "Push to main"
+          working_directory: ./sources_github
+          command: |
+            git push origin main
+    
 workflows:
   version: 2.1
   build-lint:
@@ -264,4 +289,12 @@ workflows:
             branches:
               only:
                 - test
+      - test:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - test
+          
 
