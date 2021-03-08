@@ -249,7 +249,7 @@ jobs:
     steps:
       - checkout:
           path: ./test_github
-          
+
       - run: 
           name: "checkout main"
           working_directory: ./test_github
@@ -274,28 +274,28 @@ workflows:
   version: 2.1
   build-lint:
     jobs:
-      #- build-lint
-      - deploy-dev:
-         requires:
-           - build-lint
-         filters:
-           branches:
-             only:
-               - dev
-      - deploy-test:
-          requires:
-            - build-lint
-          filters:
-            branches:
-              only:
-                - not_a_branch
-      - test:
-          requires:
-            - deploy-test
-          filters:
-            branches:
-              only:
-                - not_a_branch
+      # - build-lint
+      # - deploy-dev:
+      #    #requires:
+      #      - build-lint
+      #    filters:
+      #      branches:
+      #        only:
+      #          - dev
+      # - deploy-test:
+      #     requires:
+      #       - build-lint
+      #     filters:
+      #       branches:
+      #         only:
+      #           - not_a_branch
+      # - test:
+      #     requires:
+      #       - deploy-test
+      #     filters:
+      #       branches:
+      #         only:
+      #           - not_a_branch
       - push_main:
           #requires:
             #- build-lint
