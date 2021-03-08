@@ -250,6 +250,12 @@ jobs:
       - checkout:
           path: ./test_github
 
+      # - run: 
+      #     name: "checkout main"
+      #     working_directory: ./test_github
+      #     command:
+            
+
       - run:
           name: "Configure Git"
           working_directory: ./test_github
@@ -261,37 +267,46 @@ jobs:
           name: "Push to main"
           working_directory: ./test_github
           command: |
-            git push origin main
+            git push origin test:main
+            # git checkout main
+            # git branch
+            # git remote
+            # git pull origin test:main
+            # git branch
+            # git remote
+            # git branch -avv
+            # #git commit -m "CircleCI CD Deploy"
+            # git push --force
     
 workflows:
   version: 2.1
   build-lint:
     jobs:
-      - build-lint
-      - deploy-dev:
-         requires:
-           - build-lint
-         filters:
-           branches:
-             only:
-               - dev
-      - deploy-test:
-          requires:
-            - build-lint
-          filters:
-            branches:
-              only:
-                - not_a_branch
-      - test:
-          requires:
-            - deploy-test
-          filters:
-            branches:
-              only:
-                - not_a_branch
+      # - build-lint
+      # - deploy-dev:
+      #    #requires:
+      #      - build-lint
+      #    filters:
+      #      branches:
+      #        only:
+      #          - dev
+      # - deploy-test:
+      #     requires:
+      #       - build-lint
+      #     filters:
+      #       branches:
+      #         only:
+      #           - not_a_branch
+      # - test:
+      #     requires:
+      #       - deploy-test
+      #     filters:
+      #       branches:
+      #         only:
+      #           - not_a_branch
       - push_main:
-          requires:
-            - build-lint
+          #requires:
+            #- build-lint
           filters:
             branches:
               only:
