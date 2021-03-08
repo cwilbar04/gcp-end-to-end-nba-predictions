@@ -289,7 +289,7 @@ workflows:
             branches:
               only:
                 - test
-      - test:
+      - push_main:
           requires:
             - test
           filters:
