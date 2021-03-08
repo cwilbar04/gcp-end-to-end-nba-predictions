@@ -247,7 +247,7 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - checkout:
+      - checkout main:
           path: ./test_github
 
       - run:
@@ -261,6 +261,7 @@ jobs:
           name: "Push to main"
           working_directory: ./test_github
           command: |
+            git merge origin test
             git push origin main
     
 workflows:
