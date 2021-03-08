@@ -254,7 +254,7 @@ jobs:
       #     name: "checkout main"
       #     working_directory: ./test_github
       #     command:
-      #       git fetch origin main
+            
 
       - run:
           name: "Configure Git"
@@ -267,9 +267,10 @@ jobs:
           name: "Push to main"
           working_directory: ./test_github
           command: |
-            #git pull origin test
+            git checkout main
+            git pull origin test
             #git commit -m "CircleCI CD Deploy"
-            git push origin test:main
+            git push
     
 workflows:
   version: 2.1
