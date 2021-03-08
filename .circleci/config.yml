@@ -269,8 +269,8 @@ jobs:
           command: |
             git checkout -q main
             git pull --tags origin test --no-commit && git commit -m "Merge"
-            git pull --tags origin main --no-commit && git commit -m "Merge"
-            git push origin main:main
+            git pull --tags origin main
+            git push
             # git branch
             # git remote
             # git pull origin test:main
