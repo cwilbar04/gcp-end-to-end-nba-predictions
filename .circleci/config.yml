@@ -247,8 +247,11 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - checkout main:
-          path: ./test_github
+      - run:
+          name: "checkout main"
+          working_directory: ./test_github
+          command:
+            git checkout origin main
 
       - run:
           name: "Configure Git"
