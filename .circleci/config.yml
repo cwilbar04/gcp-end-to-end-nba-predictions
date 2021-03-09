@@ -2,6 +2,7 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
+# To do: Replace deploy jobs with one job using context variables to determine which variable to set
 version: 2.1
 jobs:
   build-lint:
@@ -66,7 +67,7 @@ jobs:
       - run:
           name: Authorize GCloud Command Line Tool
           command: |
-            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account circleci-gcf-deployer@nba-predictions-dev.iam.gserviceaccount.com --key-file=-
+            echo $CIRCLE_CI_DEPLOYER_DEV_KEY | gcloud auth activate-service-account $CIRCLE_CI_DEPLOYER_DEV --key-file=-
         
       - run:
           name: Deploy Google Cloud Functions
@@ -77,19 +78,19 @@ jobs:
                 FUNCTION_NAME=nba_basketball_reference_scraper
                 gcloud functions deploy $FUNCTION_NAME \
                   --source=./scraper \
-                  --project=$GCLOUD_PROJECT_ID \
+                  --project=$GCLOUD_PROJECT_ID_DEV \
                   --allow-unauthenticated \
                   --entry-point=nba_basketballreference_scraper \
                   --memory=1024MB \
                   --runtime=python38 \
-                  --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
+                  --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_DEV \
                   --trigger-http \
                   --timeout=300
 
                 gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
-                  --project=$GCLOUD_PROJECT_ID
+                  --project=$GCLOUD_PROJECT_ID_DEV
             fi
 
             if [ $LATEST_COMMIT = $DATA_MODEL_COMMIT ];
@@ -98,19 +99,19 @@ jobs:
                 FUNCTION_NAME=nba_model_game_refresh
                 gcloud functions deploy $FUNCTION_NAME \
                   --source=./data_model \
-                  --project=$GCLOUD_PROJECT_ID \
+                  --project=$GCLOUD_PROJECT_ID_DEV \
                   --allow-unauthenticated \
                   --entry-point=create_model_data \
                   --memory=1024MB \
                   --runtime=python38 \
-                  --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
+                  --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_DEV \
                   --trigger-http \
                   --timeout=300
 
                 gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
-                  --project=$GCLOUD_PROJECT_ID
+                  --project=$GCLOUD_PROJECT_ID_DEV
             fi
 
             if [ $LATEST_COMMIT = $GET_SCHEDULE_COMMIT ];
@@ -119,20 +120,20 @@ jobs:
                 FUNCTION_NAME=nba_get_upcoming_games
                 gcloud functions deploy $FUNCTION_NAME \
                   --source=./get_schedule \
-                  --project=$GCLOUD_PROJECT_ID \
+                  --project=$GCLOUD_PROJECT_ID_DEV \
                   --allow-unauthenticated \
                   --entry-point=write_to_bucket \
                   --memory=512MB \
                   --runtime=python38 \
-                  --service-account=biqquery-service-account@nba-predictions-dev.iam.gserviceaccount.com \
+                  --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_DEV \
                   --trigger-http \
                   --timeout=60 \
-                  --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET
+                  --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET_DEV
 
                 gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
-                  --project=$GCLOUD_PROJECT_ID
+                  --project=$GCLOUD_PROJECT_ID_DEV
             fi
 
       - run:
@@ -141,7 +142,7 @@ jobs:
             if [ $LATEST_COMMIT = $WEBAPP_COMMIT ];
               then
                 # Deploy command
-                gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID --promote --quiet
+                gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_DEV --promote --quiet
             fi
 
   deploy-test:
@@ -150,6 +151,25 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Set Environment Variables
+          command: |
+            #latest commit
+            echo 'export LATEST_COMMIT=$(git rev-parse HEAD)' >> $BASH_ENV
+            echo 'export SCRAPER_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)' >> $BASH_ENV
+            echo 'export WEBAPP_COMMIT=$(git log -1 --format=format:%H --full-diff webapp)' >> $BASH_ENV
+            echo 'export DATA_MODEL_COMMIT=$(git log -1 --format=format:%H --full-diff data_model)' >> $BASH_ENV
+            echo 'export GET_SCHEDULE_COMMIT=$(git log -1 --format=format:%H --full-diff get_schedule)' >> $BASH_ENV
+            source $BASH_ENV
+
+      - run:
+          name: Exit gracefully if no changes to any relevant folder
+          command: |
+            case $LATEST_COMMIT in
+              "$SCRAPER_COMMIT" | "$WEBAPP_COMMIT" | "$DATA_MODEL_COMMIT" | "$GET_SCHEDULE_COMMIT" ) echo 'At least one relevant folder changed - execute deploy';;
+              *) circleci-agent step halt;;
+            esac  
+                
+      - run:
           name: Authorize GCloud Command Line Tool
           command: |
             echo $CIRCLE_CI_DEPLOYER_TEST_KEY | gcloud auth activate-service-account $CIRCLE_CI_DEPLOYER_TEST --key-file=-
@@ -157,65 +177,78 @@ jobs:
       - run:
           name: Deploy Google Cloud Functions
           command: |
-            # Deploy command
-            FUNCTION_NAME=nba_basketball_reference_scraper
-            gcloud functions deploy $FUNCTION_NAME \
-              --source=./scraper \
-              --project=$GCLOUD_PROJECT_ID_TEST \
-              --allow-unauthenticated \
-              --entry-point=nba_basketballreference_scraper \
-              --memory=1024MB \
-              --runtime=python38 \
-              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_TEST \
-              --trigger-http \
-              --timeout=300
+            if [ $LATEST_COMMIT = $SCRAPER_COMMIT ];
+              then
+                # Deploy command
+                FUNCTION_NAME=nba_basketball_reference_scraper
+                gcloud functions deploy $FUNCTION_NAME \
+                  --source=./scraper \
+                  --project=$GCLOUD_PROJECT_ID_TEST \
+                  --allow-unauthenticated \
+                  --entry-point=nba_basketballreference_scraper \
+                  --memory=1024MB \
+                  --runtime=python38 \
+                  --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_TEST \
+                  --trigger-http \
+                  --timeout=300
 
-            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
-              --member=allUsers \
-              --role=roles/cloudfunctions.invoker \
-              --project=$GCLOUD_PROJECT_ID_TEST
+                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                  --member=allUsers \
+                  --role=roles/cloudfunctions.invoker \
+                  --project=$GCLOUD_PROJECT_ID_TEST
+            fi
 
-            FUNCTION_NAME=nba_model_game_refresh
-            gcloud functions deploy $FUNCTION_NAME \
-              --source=./data_model \
-              --project=$GCLOUD_PROJECT_ID_TEST \
-              --allow-unauthenticated \
-              --entry-point=create_model_data \
-              --memory=1024MB \
-              --runtime=python38 \
-              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_TEST \
-              --trigger-http \
-              --timeout=300
+            if [ $LATEST_COMMIT = $DATA_MODEL_COMMIT ];
+              then
+                # Deploy command
+                FUNCTION_NAME=nba_model_game_refresh
+                gcloud functions deploy $FUNCTION_NAME \
+                  --source=./data_model \
+                  --project=$GCLOUD_PROJECT_ID_TEST \
+                  --allow-unauthenticated \
+                  --entry-point=create_model_data \
+                  --memory=1024MB \
+                  --runtime=python38 \
+                  --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_TEST \
+                  --trigger-http \
+                  --timeout=300
 
-            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
-              --member=allUsers \
-              --role=roles/cloudfunctions.invoker \
-              --project=$GCLOUD_PROJECT_ID_TEST
+                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                  --member=allUsers \
+                  --role=roles/cloudfunctions.invoker \
+                  --project=$GCLOUD_PROJECT_ID_TEST
+            fi
 
-            # Deploy command
-            FUNCTION_NAME=nba_get_upcoming_games
-            gcloud functions deploy $FUNCTION_NAME \
-              --source=./get_schedule \
-              --project=$GCLOUD_PROJECT_ID_TEST \
-              --allow-unauthenticated \
-              --entry-point=write_to_bucket \
-              --memory=512MB \
-              --runtime=python38 \
-              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_TEST \
-              --trigger-http \
-              --timeout=60 \
-              --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET
+            if [ $LATEST_COMMIT = $GET_SCHEDULE_COMMIT ];
+              then
+                # Deploy command
+                FUNCTION_NAME=nba_get_upcoming_games
+                gcloud functions deploy $FUNCTION_NAME \
+                  --source=./get_schedule \
+                  --project=$GCLOUD_PROJECT_ID_TEST \
+                  --allow-unauthenticated \
+                  --entry-point=write_to_bucket \
+                  --memory=512MB \
+                  --runtime=python38 \
+                  --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_TEST \
+                  --trigger-http \
+                  --timeout=60 \
+                  --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET_TEST
 
-            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
-              --member=allUsers \
-              --role=roles/cloudfunctions.invoker \
-              --project=$GCLOUD_PROJECT_ID_TEST
-            
+                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                  --member=allUsers \
+                  --role=roles/cloudfunctions.invoker \
+                  --project=$GCLOUD_PROJECT_ID_TEST
+            fi
+
       - run:
           name: Deploy Web Service to Google App Engine
-          command:
-            # Deploy command
-            gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_TEST --promote --quiet 
+          command: |
+            if [ $LATEST_COMMIT = $WEBAPP_COMMIT ];
+              then
+                # Deploy command
+                gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_TEST --promote --quiet
+            fi
 
   test:
     docker:
@@ -273,6 +306,25 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Set Environment Variables
+          command: |
+            #latest commit
+            echo 'export LATEST_COMMIT=$(git rev-parse HEAD)' >> $BASH_ENV
+            echo 'export SCRAPER_COMMIT=$(git log -1 --format=format:%H --full-diff scraper)' >> $BASH_ENV
+            echo 'export WEBAPP_COMMIT=$(git log -1 --format=format:%H --full-diff webapp)' >> $BASH_ENV
+            echo 'export DATA_MODEL_COMMIT=$(git log -1 --format=format:%H --full-diff data_model)' >> $BASH_ENV
+            echo 'export GET_SCHEDULE_COMMIT=$(git log -1 --format=format:%H --full-diff get_schedule)' >> $BASH_ENV
+            source $BASH_ENV
+
+      - run:
+          name: Exit gracefully if no changes to any relevant folder
+          command: |
+            case $LATEST_COMMIT in
+              "$SCRAPER_COMMIT" | "$WEBAPP_COMMIT" | "$DATA_MODEL_COMMIT" | "$GET_SCHEDULE_COMMIT" ) echo 'At least one relevant folder changed - execute deploy';;
+              *) circleci-agent step halt;;
+            esac  
+                
+      - run:
           name: Authorize GCloud Command Line Tool
           command: |
             echo $CIRCLE_CI_DEPLOYER_PROD_KEY | gcloud auth activate-service-account $CIRCLE_CI_DEPLOYER_PROD --key-file=-
@@ -280,65 +332,78 @@ jobs:
       - run:
           name: Deploy Google Cloud Functions
           command: |
-            # Deploy command
-            FUNCTION_NAME=nba_basketball_reference_scraper
-            gcloud functions deploy $FUNCTION_NAME \
-              --source=./scraper \
-              --project=$GCLOUD_PROJECT_ID_PROD \
-              --allow-unauthenticated \
-              --entry-point=nba_basketballreference_scraper \
-              --memory=1024MB \
-              --runtime=python38 \
-              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_PROD \
-              --trigger-http \
-              --timeout=300
+            if [ $LATEST_COMMIT = $SCRAPER_COMMIT ];
+              then
+                # Deploy command
+                FUNCTION_NAME=nba_basketball_reference_scraper
+                gcloud functions deploy $FUNCTION_NAME \
+                  --source=./scraper \
+                  --project=$GCLOUD_PROJECT_ID_PROD \
+                  --allow-unauthenticated \
+                  --entry-point=nba_basketballreference_scraper \
+                  --memory=1024MB \
+                  --runtime=python38 \
+                  --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_PROD \
+                  --trigger-http \
+                  --timeout=300
 
-            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
-              --member=allUsers \
-              --role=roles/cloudfunctions.invoker \
-              --project=$GCLOUD_PROJECT_ID_PROD
+                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                  --member=allUsers \
+                  --role=roles/cloudfunctions.invoker \
+                  --project=$GCLOUD_PROJECT_ID_PROD
+            fi
 
-            FUNCTION_NAME=nba_model_game_refresh
-            gcloud functions deploy $FUNCTION_NAME \
-              --source=./data_model \
-              --project=$GCLOUD_PROJECT_ID_PROD \
-              --allow-unauthenticated \
-              --entry-point=create_model_data \
-              --memory=1024MB \
-              --runtime=python38 \
-              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_PROD \
-              --trigger-http \
-              --timeout=300
+            if [ $LATEST_COMMIT = $DATA_MODEL_COMMIT ];
+              then
+                # Deploy command
+                FUNCTION_NAME=nba_model_game_refresh
+                gcloud functions deploy $FUNCTION_NAME \
+                  --source=./data_model \
+                  --project=$GCLOUD_PROJECT_ID_PROD \
+                  --allow-unauthenticated \
+                  --entry-point=create_model_data \
+                  --memory=1024MB \
+                  --runtime=python38 \
+                  --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_PROD \
+                  --trigger-http \
+                  --timeout=300
 
-            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
-              --member=allUsers \
-              --role=roles/cloudfunctions.invoker \
-              --project=$GCLOUD_PROJECT_ID_PROD
+                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                  --member=allUsers \
+                  --role=roles/cloudfunctions.invoker \
+                  --project=$GCLOUD_PROJECT_ID_PROD
+            fi
 
-            # Deploy command
-            FUNCTION_NAME=nba_get_upcoming_games
-            gcloud functions deploy $FUNCTION_NAME \
-              --source=./get_schedule \
-              --project=$GCLOUD_PROJECT_ID_PROD \
-              --allow-unauthenticated \
-              --entry-point=write_to_bucket \
-              --memory=512MB \
-              --runtime=python38 \
-              --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_PROD \
-              --trigger-http \
-              --timeout=60 \
-              --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET
+            if [ $LATEST_COMMIT = $GET_SCHEDULE_COMMIT ];
+              then
+                # Deploy command
+                FUNCTION_NAME=nba_get_upcoming_games
+                gcloud functions deploy $FUNCTION_NAME \
+                  --source=./get_schedule \
+                  --project=$GCLOUD_PROJECT_ID_PROD \
+                  --allow-unauthenticated \
+                  --entry-point=write_to_bucket \
+                  --memory=512MB \
+                  --runtime=python38 \
+                  --service-account=$CLOUD_FUNCTION_SERVICE_ACCOUNT_PROD \
+                  --trigger-http \
+                  --timeout=60 \
+                  --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET_PROD
 
-            gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
-              --member=allUsers \
-              --role=roles/cloudfunctions.invoker \
-              --project=$GCLOUD_PROJECT_ID_PROD
-            
+                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                  --member=allUsers \
+                  --role=roles/cloudfunctions.invoker \
+                  --project=$GCLOUD_PROJECT_ID_PROD
+            fi
+
       - run:
           name: Deploy Web Service to Google App Engine
-          command:
-            # Deploy command
-            gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_PROD --promote --quiet 
+          command: |
+            if [ $LATEST_COMMIT = $WEBAPP_COMMIT ];
+              then
+                # Deploy command
+                gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_PROD --promote --quiet
+            fi 
     
 workflows:
   version: 2.1
