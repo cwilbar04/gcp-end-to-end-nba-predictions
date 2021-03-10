@@ -106,7 +106,7 @@ def remove_duplicates(table, distinct_column):
     if game_count['row_count'][0] == game_count['game_count'][0]:
         return f'No duplicates in {table}!'
     else:
-        deduplicate = client.query('''
+        client.query('''
         CREATE OR REPLACE TABLE `%s.%s`
         AS
         SELECT * EXCEPT(row_num) FROM (
