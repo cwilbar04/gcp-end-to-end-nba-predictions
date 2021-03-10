@@ -48,12 +48,12 @@ def get_games(startDate,endDate):
 
                 game_date = datetime.strptime(game_date_node.text, '%a, %b %d, %Y').date()
                 if game_date >= startDate and game_date <= endDate:
-                    #cells = row.find_all(['td', 'th'])
+                   
                     r = {}
-                    #r.setdefault(game_start_time, []).append(value)
+                    
 
                     v1 = row.find('th',{"data-stat": "date_game"})
-                    #r[k1] = v1.text
+                    
                     r['game_date'] = datetime.strptime(v1.text, '%a, %b %d, %Y').strftime("%Y-%m-%d")
                     r['game_day'] = datetime.strptime(v1.text, '%a, %b %d, %Y').strftime("%A")
 
