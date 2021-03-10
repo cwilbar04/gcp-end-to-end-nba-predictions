@@ -76,6 +76,8 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+notebooks/*Sandbox.ipynb
+notebooks/*sandbox.ipynb
 
 # IPython
 profile_default/
@@ -127,4 +129,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-notebooks/Testing Sandbox.ipynb
+
