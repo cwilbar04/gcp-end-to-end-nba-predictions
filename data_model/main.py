@@ -75,10 +75,10 @@ def create_model_data(request):
     ## Setup
     my_project_id = os.environ.get('GCP_PROJECT')
     client = bigquery.Client(project=my_project_id)
-    raw_game_data_table = f'{my_project_id}.nba.raw_basketballreference_game'
-    raw_player_data_table = f'{my_project_id}.nba.raw_basketballreference_playerbox'
-    games_to_load_to_model_view = f'{my_project_id}.nba.games_to_load_to_model'
-    model_table_name = f'{my_project_id}.nba.model_game'
+    raw_game_data_table = f'nba.raw_basketballreference_game'
+    raw_player_data_table = f'nba.raw_basketballreference_playerbox'
+    games_to_load_to_model_view = f'nba.games_to_load_to_model'
+    model_table_name = f'nba.model_game'
 
     # Enter columns to created linearly weighted moving average calculations and number of periods to use
     wma_columns = ['pace',
