@@ -87,7 +87,7 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                gcloud functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID_DEV
@@ -108,7 +108,7 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                gcloud functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID_DEV
@@ -130,7 +130,7 @@ jobs:
                   --timeout=60 \
                   --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET_DEV
 
-                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                gcloud functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID_DEV
@@ -192,7 +192,7 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                gcloud functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID_TEST
@@ -213,7 +213,7 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                gcloud functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID_TEST
@@ -235,7 +235,7 @@ jobs:
                   --timeout=60 \
                   --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET_TEST
 
-                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                gcloud functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID_TEST
@@ -347,7 +347,7 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                gcloud functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID_PROD
@@ -368,7 +368,7 @@ jobs:
                   --trigger-http \
                   --timeout=300
 
-                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                gcloud functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID_PROD
@@ -390,7 +390,7 @@ jobs:
                   --timeout=60 \
                   --set-env-vars=CLOUD_STORAGE_BUCKET=$CLOUD_STORAGE_BUCKET_PROD
 
-                gcloud alpha functions add-iam-policy-binding $FUNCTION_NAME \
+                gcloud functions add-iam-policy-binding $FUNCTION_NAME \
                   --member=allUsers \
                   --role=roles/cloudfunctions.invoker \
                   --project=$GCLOUD_PROJECT_ID_PROD

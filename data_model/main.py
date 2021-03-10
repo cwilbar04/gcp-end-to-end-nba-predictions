@@ -75,10 +75,10 @@ def create_model_data(request):
     ## Setup
     my_project_id = os.environ.get('GCP_PROJECT')
     client = bigquery.Client(project=my_project_id)
-    raw_game_data_table = 'nba.raw_basketballreference_game'
-    raw_player_data_table = 'nba.raw_basketballreference_playerbox'
-    games_to_load_to_model_view = 'nba.games_to_load_to_model'
-    model_table_name = 'nba.model_game'
+    raw_game_data_table = f'{my_project_id}.nba.raw_basketballreference_game'
+    raw_player_data_table = f'{my_project_id}.nba.raw_basketballreference_playerbox'
+    games_to_load_to_model_view = f'{my_project_id}.nba.games_to_load_to_model'
+    model_table_name = f'{my_project_id}.nba.model_game'
 
     # Enter columns to created linearly weighted moving average calculations and number of periods to use
     wma_columns = ['pace',
@@ -98,6 +98,9 @@ def create_model_data(request):
     FROM `%s` as games
     INNER JOIN `%s` as load ON games.game_key = load.game_key 
     ''' % (raw_game_data_table,games_to_load_to_model_view)).to_dataframe()
+
+    if game_bq.empty:
+        return 'Function ended early. No new data to load.'
 
     player_bq = client.query('''
     SELECT players.game_key, game_date, h_or_a, mp, plus_minus, starter_flag, NEEDS_TO_LOAD_TO_MODEL
@@ -229,7 +232,6 @@ def create_model_data(request):
             team_games = create_linear_weighted_moving_average(team_games,col,W)
             team_games[f'incoming_wma_{W}_{col}'] = team_games[f'wma_{W}_{col}'].shift()
         games_by_team_with_wma = pd.concat([games_by_team_with_wma, team_games])
-    games_by_team = games_by_team_with_wma.copy()
     
     #Only load rows where not in model
     model_game_data = games_by_team_with_wma[games_by_team_with_wma['NEEDS_TO_LOAD_TO_MODEL']==1].copy()
