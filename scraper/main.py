@@ -92,6 +92,31 @@ def get_text(stat):
         txt = None
     return txt
 
+def remove_duplicates(table, distinct_column):
+    ## Remove Duplicates - Always run at the end if you have had issues while loading ##
+    client = bigquery.Client(project=os.environ.get('GCP_PROJECT'))
+
+    ## Get row count and distinct game count
+    game_count = client.query('''
+    select count(1) as row_count,
+        count(distinct %s) as game_count 
+        from `%s.%s`
+    ''' % (distinct_column,os.environ.get('GCP_PROJECT'),table)).to_dataframe()
+
+    if game_count['row_count'][0] == game_count['game_count'][0]:
+        return f'No duplicates in {table}!'
+    else:
+        client.query('''
+        CREATE OR REPLACE TABLE `%s.%s`
+        AS
+        SELECT * EXCEPT(row_num) FROM (
+        SELECT
+        *, ROW_NUMBER() OVER (PARTITION BY %s ORDER BY load_datetime desc) as row_num
+        FROM `%s.%s`
+        ) WHERE row_num = 1
+        ''' % (os.environ.get('GCP_PROJECT'),table,distinct_column,os.environ.get('GCP_PROJECT'),table))
+        return 'Duplicates removed from {table}'
+
 def  nba_basketballreference_scraper(request):
     #Get project ID where function is run 
     project_id = os.environ.get('GCP_PROJECT')
@@ -457,5 +482,11 @@ def  nba_basketballreference_scraper(request):
 
     except Exception as e: 
         raise ValueError("Load Job Failed - Check error log for specific details") from e
+
+    game_remove = remove_duplicates('nba.raw_basketballreference_game','game_key')
+    player_remove = remove_duplicates('nba.raw_basketballreference_playerbox', 'player_stat_key')
+
+    print(game_remove)
+    print(player_remove)
 
     return f'Successfully loaded {player_game_rows_loaded} row(s) to raw_basketballreference_playerbox and {game_rows_loaded} to raw_basketballreference_game'
