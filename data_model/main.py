@@ -273,10 +273,6 @@ def create_model_data(request):
     job_config.autodetect='True'
     job_config.create_disposition = 'CREATE_IF_NEEDED'
     job_config.write_disposition = 'WRITE_APPEND'
-    # job_config.time_partitioning = bigquery.TimePartitioning(
-    #     type_=bigquery.TimePartitioningType.DAY,
-    #     field="game_date")
-    ## Set schema for specific columns where more information is needed (e.g. not NULLABLE or specific date/time)
     job_config.schema = [
         bigquery.SchemaField('game_key','STRING', 'REQUIRED'),
         bigquery.SchemaField('team','STRING', 'REQUIRED'),
