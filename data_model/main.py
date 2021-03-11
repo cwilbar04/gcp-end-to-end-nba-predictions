@@ -67,11 +67,12 @@ def create_linear_weighted_moving_average(data,column,W):
 def create_model_data(request):
 
     # Set weights value - Consider making this an input to make this more dynamic
-    W = 20
+    W = 10
 
     # Add to avoid error - cloud functions requires input of request
     request_json = request.get_json()
-    if request_json:     
+    if request_json:
+        
         print("Payload ignored. This function does not use a payload")
     
     
@@ -302,4 +303,4 @@ def create_model_data(request):
         f'loading {model_result.output_rows} row(s) '
         f'to {model_result.destination}')
 
-    return model_message
+    print(model_message)
