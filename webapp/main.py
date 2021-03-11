@@ -74,7 +74,7 @@ def ChooseTeamsPost():
 @app.route('/UpcomingGames')
 def UpcomingGames():
     client = storage.Client(project=os.environ.get('GOOGLE_CLOUD_PROJECT'))
-    bucket_name = f'os.environ.get('GOOGLE_CLOUD_PROJECT').appspot.com' 
+    bucket_name = f'os.environ.get("GOOGLE_CLOUD_PROJECT").appspot.com' 
     bucket = client.bucket(bucket_name)
     blob = bucket.blob('static/upcoming.json').download_as_string()
     data = json.loads(blob.decode("utf-8").replace("'",'"'))
