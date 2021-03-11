@@ -251,7 +251,7 @@ jobs:
             fi
 
   test-dev:
-     docker:
+    docker:
       - image: circleci/python:3.8
 
     working_directory: ~/repo
@@ -454,8 +454,7 @@ workflows:
       - test-dev:
           requires:
             - deploy-test
-          type: 
-            - approval
+          type: approval
           filters:
             branches:
               only:
@@ -469,7 +468,7 @@ workflows:
                 - test
       - push_main:
           requires:
-            - test
+            - test-test
           filters:
             branches:
               only:
