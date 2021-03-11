@@ -463,7 +463,7 @@ workflows:
             - deploy-test
       - deploy-to-prod-approval:
           requires:
-            -test-test
+            - test-test
           type: approval     
       - push_main:
           requires:
