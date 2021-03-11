@@ -4,8 +4,8 @@ import os
 def web_response_ok(url):
     try:
         r = requests.head(url)
-    except Exception as e:
-        print(e)
+    except Exception:
+        print("Invalid URL")
         return False
     
     return r.status_code == 200
