@@ -4,7 +4,8 @@ import os
 def web_response_ok(url):
     try:
         r = requests.head(url)
-    except (ValueError, Exception):
+    except Exception as e:
+        print(e)
         return False
     
     return r.status_code == 200
