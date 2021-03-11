@@ -2,7 +2,9 @@
 [![CircleCI CI/CD Pipeline](https://circleci.com/gh/cwilbar04/nba-predictions.svg?style=shield)](https://circleci.com/gh/cwilbar04/nba-predictions)
 
 
-MSDS 434 Final Project - Cloud-native analytics application that is hosted on the Google Cloud Platform used to predict NBA scores in head to head match-ups.
+Cloud-native analytics application that is hosted on the Google Cloud Platform used to predict NBA scores in head to head match-ups.
+
+https://nba-predictions-prod.uc.r.appspot.com/
 
 Account that runs Google Cloud Function must have: 
   - Project - Editor 
