@@ -74,7 +74,7 @@ def ChooseTeamsPost():
 @app.route('/UpcomingGames')
 def UpcomingGames():
     client = storage.Client()
-    bucket_name = os.environ.get('CLOUD_STORAGE_BUCKET') #'nba-predictions-dev.appspot.com'
+    bucket_name = os.environ.get('CLOUD_STORAGE_BUCKET')
     bucket = client.bucket(bucket_name)
     blob = bucket.blob('static/upcoming.json').download_as_string()
     data = json.loads(blob.decode("utf-8").replace("'",'"'))

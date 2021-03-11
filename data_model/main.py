@@ -303,4 +303,4 @@ def create_model_data(request):
         f'loading {model_result.output_rows} row(s) '
         f'to {model_result.destination}')
 
-    print(model_message)
+    return model_message
