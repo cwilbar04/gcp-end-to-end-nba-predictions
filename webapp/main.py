@@ -15,7 +15,7 @@ def home():
     return render_template('home.html')
 
 @app.route('/ChooseTeams')
-def ChooseTeams():z
+def ChooseTeams():
     # For the sake of example, use static list of NBA teams
     # This will be replaced with real information in later steps.
     # nba_teams = ['Atlanta Hawks',
