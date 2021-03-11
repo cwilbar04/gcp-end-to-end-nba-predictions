@@ -3,8 +3,8 @@ install:
 		pip install -r requirements.txt
 
 test:
-	python -m pytest -vv --cov=mylibrary tests/*.py
-	## python -m pytest --nbval notebook.ipynb
+	cd tests
+	python -m pytest -vv --cov=mylibrary
 
 lint:
 	pylint --disable=R,C mylibrary cli scraper tests webapp data_model get_schedule
