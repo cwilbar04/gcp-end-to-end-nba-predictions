@@ -490,7 +490,7 @@ workflows:
           requires:
             - test-test
           type: approval     
-      - push_main:
+      - deploy-to-prod-approval:
           requires:
             - test-test
       - deploy-prod:
