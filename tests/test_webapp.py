@@ -1,13 +1,21 @@
 import requests
+import os
 
 def web_response_ok(url):
     try:
         r = requests.head(url)
     except Exception: 
-        assert False
+        return False
     
-    assert r.status_code == 200
+    return r.status_code == 200
+
+def test_web():
+    test_pages = ['','ChooseTeams','UpcomingGames'] # add to this list for every route in webapp/main.py
+    project = os.environ.get('GCP_PROJECT_ID')
+    for page in test_pages:
+        result = web_response_ok(f'https://{project}.uc.r.appspot.com/{page}')
+        assert result == True
 
 if __name__ == '__main__':
-    test_url = 'https://nba-predictions-test.uc.r.appspot.com/'
+    test_url = f'https://{os.environ.get("GCP_PROJECT_ID")}.uc.r.appspot.com/'
     web_response_ok(test_url)
