@@ -1,14 +1,13 @@
 import requests
 
-url = 'https://nba-predictions-test.uc.r.appspot.com/'
-
 def web_response_ok(url):
     try:
         r = requests.head(url)
-    except:
+    except Exception: 
         assert False
     
     assert r.status_code == 200
 
 if __name__ == '__main__':
-    web_response_ok(url)
+    test_url = 'https://nba-predictions-test.uc.r.appspot.com/'
+    web_response_ok(test_url)
