@@ -3,7 +3,6 @@ from flask import Flask, render_template, request#, url_for, redirect
 from google.cloud import storage
 from google.cloud import firestore
 from google.cloud import bigquery
-from google.appengine.api import app_identity
 import json
 import os
 
@@ -16,7 +15,7 @@ def home():
     return render_template('home.html')
 
 @app.route('/ChooseTeams')
-def ChooseTeams():
+def ChooseTeams():z
     # For the sake of example, use static list of NBA teams
     # This will be replaced with real information in later steps.
     # nba_teams = ['Atlanta Hawks',
@@ -75,7 +74,7 @@ def ChooseTeamsPost():
 @app.route('/UpcomingGames')
 def UpcomingGames():
     client = storage.Client()
-    bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name()) #'nba-predictions-dev.appspot.com'
+    bucket_name = os.environ.get('CLOUD_STORAGE_BUCKET') #'nba-predictions-dev.appspot.com'
     bucket = client.bucket(bucket_name)
     blob = bucket.blob('static/upcoming.json').download_as_string()
     data = json.loads(blob.decode("utf-8").replace("'",'"'))
