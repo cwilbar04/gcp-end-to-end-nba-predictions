@@ -3,6 +3,7 @@ from flask import Flask, render_template, request#, url_for, redirect
 from google.cloud import storage
 from google.cloud import firestore
 from google.cloud import bigquery
+from google.appengine.api import app_identity
 import json
 import os
 

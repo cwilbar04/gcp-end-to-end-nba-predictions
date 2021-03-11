@@ -3,4 +3,5 @@ pandas
 google-cloud-storage
 google-cloud-firestore
 google-cloud-bigquery
+GoogleAppEngineCloudStorageClient
 pyarrow
