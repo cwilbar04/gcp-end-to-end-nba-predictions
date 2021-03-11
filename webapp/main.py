@@ -74,7 +74,7 @@ def ChooseTeamsPost():
 @app.route('/UpcomingGames')
 def UpcomingGames():
     client = storage.Client(project=os.environ.get('GOOGLE_CLOUD_PROJECT'))
-    bucket_name = f'os.environ.get("GOOGLE_CLOUD_PROJECT").appspot.com' 
+    bucket_name = f'{os.environ.get("GOOGLE_CLOUD_PROJECT")}.appspot.com' 
     bucket = client.bucket(bucket_name)
     blob = bucket.blob('static/upcoming.json').download_as_string()
     data = json.loads(blob.decode("utf-8").replace("'",'"'))
@@ -97,4 +97,4 @@ if __name__ == '__main__':
     # the "static" directory. See:
     # http://flask.pocoo.org/docs/1.0/quickstart/#static-files. Once deployed,s
     # App Engine itself will serve those files as configured in app.yaml.
-    app.run(host='127.0.0.1', port=8080, debug=False)
+    app.run(host='127.0.0.1', port=8080, debug=True)
