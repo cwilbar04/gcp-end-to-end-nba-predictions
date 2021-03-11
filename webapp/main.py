@@ -50,7 +50,7 @@ def ChooseTeams():
     #                 'Washington Wizards'
     #                ]
     
-    # Consider using static list to save resource cost
+    # Consider using static list to save resource cost and exclude old teams
     db = firestore.Client()
     docs = db.collection('team_model_data').stream()
     nba_teams = []
