@@ -94,14 +94,14 @@ def get_text(stat):
 
 def remove_duplicates(table, distinct_column):
     ## Remove Duplicates - Always run at the end if you have had issues while loading ##
-    client = bigquery.Client(project=os.environ.get('GCP_PROJECT'))
+    client = bigquery.Client()
 
     ## Get row count and distinct game count
     game_count = client.query('''
     select count(1) as row_count,
         count(distinct %s) as game_count 
-        from `%s.%s`
-    ''' % (distinct_column,os.environ.get('GCP_PROJECT'),table)).to_dataframe()
+        from `%s`
+    ''' % (distinct_column,table)).to_dataframe()
 
     if game_count['row_count'][0] == game_count['game_count'][0]:
         return f'No duplicates in {table}!'
@@ -112,9 +112,9 @@ def remove_duplicates(table, distinct_column):
         SELECT * EXCEPT(row_num) FROM (
         SELECT
         *, ROW_NUMBER() OVER (PARTITION BY %s ORDER BY load_datetime desc) as row_num
-        FROM `%s.%s`
+        FROM `%s`
         ) WHERE row_num = 1
-        ''' % (os.environ.get('GCP_PROJECT'),table,distinct_column,os.environ.get('GCP_PROJECT'),table))
+        ''' % (os.environ.get('GCP_PROJECT'),table,distinct_column,table))
         return 'Duplicates removed from {table}'
 
 def  nba_basketballreference_scraper(request):
