@@ -453,12 +453,12 @@ workflows:
                 - test
       - test-dev:
           requires:
-            - deploy-test
+            - deploy-dev
           type: approval
           filters:
             branches:
               only:
-                - dev
+                - dev   
       - test-test:
           requires:
             - deploy-test
