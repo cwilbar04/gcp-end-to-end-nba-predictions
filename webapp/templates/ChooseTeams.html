@@ -14,25 +14,35 @@
     </ul><br><br><br><br>
 
   <h1>Predict Point Spread for Any Game!</h1>
-  <h3>Enter Home and Away Teams to Predict Point Spread</h3>
+  <h3>Enter Home and Away Teams and choose a predictive model to use to Predict Point Spread</h3>
 
   <form method="POST">
-  <label for="AwayTeam:">Away Team:</label>
-  <select id="AwayTeam" name="AwayTeam">
-    {% for team in teams %}
-    <option value="{{ team }}">{{ team }}</option>
-    {% endfor %}
-  </select>
-  <br>
-  <h5> vs. </h5>
-  <br>
-  <label for="HomeTeam:">Home Team:</label>
-  <select id="HomeTeam" name="HomeTeam">
-    {% for team in teams %}
-    <option value="{{ team }}">{{ team }}</option>
-    {% endfor %}
-  </select>
-  <br><br>
+    <label for="AwayTeam:">Away Team:</label>
+    <select id="AwayTeam" name="AwayTeam">
+      {% for team in teams %}
+      <option value="{{ team }}">{{ team }}</option>
+      {% endfor %}
+    </select>
+    <h5> vs. </h5>
+    <label for="HomeTeam:">Home Team:</label>
+    <select id="HomeTeam" name="HomeTeam">
+      {% for team in teams %}
+      <option value="{{ team }}">{{ team }}</option>
+      {% endfor %}
+    </select>
+    <br>
+    <br>
+    <br>
+    <br>
+    <label for="Model:">Model:</label>
+    <select id="Model" name="Model">
+      {% for model in models %}
+      <option value="{{ model }}">{{ model }}</option>
+      {% endfor %}
+    </select>
+      <br>
+      <br>
+      <br>
   <input type="submit">
   </form>
 </body>
