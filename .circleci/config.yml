@@ -271,8 +271,8 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            export GCP_PROJECT_ID=$GCLOUD_PROJECT_ID_DEV
-            source $GCP_PROJECT_ID
+            echo 'export GCP_PROJECT_ID=$GCLOUD_PROJECT_ID_DEV' >> $BASH_ENV
+            source $BASH_ENV
             make test
 
   test-test:
