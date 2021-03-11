@@ -451,28 +451,23 @@ workflows:
             branches:
               only:
                 - test
-      - test-dev:
+      - test-dev-approval:
           requires:
             - deploy-dev
           type: approval
-          filters:
-            branches:
-              only:
-                - dev   
+      - test-dev:
+          requires:
+            - test-dev-approval 
       - test-test:
           requires:
             - deploy-test
-          filters:
-            branches:
-              only:
-                - test
+      - deploy-to-prod-approval:
+          requires:
+            -test-test
+          type: approval     
       - push_main:
           requires:
             - test-test
-          filters:
-            branches:
-              only:
-                - test
       - deploy-prod:
           requires:
             - push_main
