@@ -43,28 +43,28 @@ To perform benchmark testing using apache beam run the following commands on Goo
 Check out this [website](https://www.datadoghq.com/blog/apachebench/) for more info on interpreting results.
 
 Download and activate apache beam
-'''
+```
 sudo apt install apache2
 sudo service apache2 start
-'''
+```
 
 Test the home page - replace url with your own url
-'''
+```
 ab -n 100 -c 10 https://nba-predictions-prod.uc.r.appspot.com/
-'''
+```
 
 Test the Upcoming Games page
-'''
+```
 ab -n 100 -c 10 https://nba-predictions-prod.uc.r.appspot.com/UpcomingGames
-'''
+```
 
 Test the Choose Teams page
-'''
+```
 ab -n 100 -c 10 https://nba-predictions-prod.uc.r.appspot.com/ChooseTeams
-'''
+```
 
 Create file to test Choose Teams POST method (prediction results)
-'''
+```
 cat > post_test.txt << EOF
 --1234567890
 Content-Disposition: form-data; name="AwayTeam"
@@ -77,12 +77,12 @@ Content-Disposition: form-data; name="Model"
 baseline_linear_model
 --1234567890--
 EOF
-'''
+```
 
 Test post results using created file with form data
-'''cmd
+```cmd
 ab -n 100 -c 10 -p ./post_test.txt -T 'multipart/form-data; boundary=1234567890' https://nba-predictions-prod.uc.r.appspot.com/ChooseTeams
-'''
+```
 
  
 
