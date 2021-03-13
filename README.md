@@ -72,12 +72,15 @@ Create file to test Choose Teams POST method (prediction results)
 cat > post_test.txt << EOF
 --1234567890
 Content-Disposition: form-data; name="AwayTeam"
+
 Milwaukee Bucks
 --1234567890
 Content-Disposition: form-data; name="HomeTeam"
+
 Chicago Bulls
 --1234567890
 Content-Disposition: form-data; name="Model"
+
 baseline_linear_model
 --1234567890--
 EOF
