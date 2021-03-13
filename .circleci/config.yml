@@ -250,7 +250,7 @@ jobs:
                 gcloud app deploy ./webapp/app.yaml --project=$GCLOUD_PROJECT_ID_TEST --promote --quiet
             fi
 
-  test:
+  test-dev:
     docker:
       - image: circleci/python:3.8
 
@@ -271,6 +271,58 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
+            echo 'export GCP_PROJECT_ID=$GCLOUD_PROJECT_ID_DEV' >> $BASH_ENV
+            source $BASH_ENV
+            make test
+
+  test-test:
+    docker:
+      - image: circleci/python:3.8
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      
+      # run tests!
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            echo 'export GCP_PROJECT_ID=$GCLOUD_PROJECT_ID_TEST' >> $BASH_ENV
+            source $BASH_ENV
+            make test
+
+  test-prod:
+    docker:
+      - image: circleci/python:3.8
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      
+      # run tests!
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            echo 'export GCP_PROJECT_ID=$GCLOUD_PROJECT_ID_PROD' >> $BASH_ENV
+            source $BASH_ENV
             make test
   
   push_main:
@@ -424,22 +476,28 @@ workflows:
             branches:
               only:
                 - test
-      - test:
+      - test-dev-approval:
+          requires:
+            - deploy-dev
+          type: approval
+      - test-dev:
+          requires:
+            - test-dev-approval 
+      - test-test:
           requires:
             - deploy-test
-          filters:
-            branches:
-              only:
-                - test
+      - deploy-to-prod-approval:
+          requires:
+            - test-test
+          type: approval     
       - push_main:
           requires:
-            - test
-          filters:
-            branches:
-              only:
-                - test
+            - deploy-to-prod-approval
       - deploy-prod:
           requires:
             - push_main
+      - test-prod:
+          requires:
+            - deploy-prod
           
 

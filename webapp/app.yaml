@@ -1,8 +1,5 @@
 runtime: python39
 
-env_variables:
-  CLOUD_STORAGE_BUCKET: "nba-predictions-dev.appspot.com"
-
 handlers:
   # This configures Google App Engine to serve the files in the app's static
   # directory.

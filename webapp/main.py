@@ -2,6 +2,7 @@ from model import predicted_pointspread
 from flask import Flask, render_template, request#, url_for, redirect
 from google.cloud import storage
 from google.cloud import firestore
+from google.cloud import bigquery
 import json
 import os
 
@@ -49,24 +50,31 @@ def ChooseTeams():
     #                 'Washington Wizards'
     #                ]
     
-    ## Temporarily use firebase for testing. Consider using static list to save resource cost
-    db = firestore.Client()
+    # Consider using static list to save resource cost and exclude old teams
+    db = firestore.Client(project=os.environ.get('GOOGLE_CLOUD_PROJECT'))
     docs = db.collection('team_model_data').stream()
     nba_teams = []
     for doc in docs:
         nba_teams.append(doc.id)
-    return render_template('ChooseTeams.html', teams=nba_teams)
+
+    
+    client = bigquery.Client(project=os.environ.get('GOOGLE_CLOUD_PROJECT'))
+    dataset_id = 'nba'
+    models = client.list_models(dataset_id) 
+    model_names = [model.model_id for model in models] 
+
+    return render_template('ChooseTeams.html', teams=nba_teams, models=model_names)
 
 @app.route('/ChooseTeams', methods=['POST'])
 def ChooseTeamsPost():
-    teams = {'HomeTeam':request.form['HomeTeam'], 'AwayTeam':request.form['AwayTeam']}
+    teams = {'HomeTeam':request.form['HomeTeam'], 'AwayTeam':request.form['AwayTeam'], 'Model':request.form['Model']}
     final_output = predicted_pointspread(teams)
     return render_template('ChooseTeamsPost.html', final_output=final_output)
 
 @app.route('/UpcomingGames')
 def UpcomingGames():
-    client = storage.Client()
-    bucket_name = os.environ.get("CLOUD_STORAGE_BUCKET") #'nba-predictions-dev.appspot.com'
+    client = storage.Client(project=os.environ.get('GOOGLE_CLOUD_PROJECT'))
+    bucket_name = f'{os.environ.get("GOOGLE_CLOUD_PROJECT")}.appspot.com' 
     bucket = client.bucket(bucket_name)
     blob = bucket.blob('static/upcoming.json').download_as_string()
     data = json.loads(blob.decode("utf-8").replace("'",'"'))
