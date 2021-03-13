@@ -15,7 +15,11 @@ https://nba-predictions-prod.uc.r.appspot.com/
 ## Create your Own Application
 To create your own application clone this repository to a local file path.
 
+Open scripting environment.
+
 Create a [python virtual environment](https://docs.python.org/3/tutorial/venv.html).
+
+Run "make install" to install all required packages. (See [best answer on StackOverflow](https://stackoverflow.com/questions/32127524/how-to-install-and-use-make-in-windows) for installing Make on Windows)
 
 Launch jupyter notebook server and open the "Project Creation Workbook" in the project_creation folder ([link]())
 
