@@ -87,7 +87,7 @@ def create_model_data(request):
         'opponent_off_rtg', 'starter_minutes_played_proportion',
         'bench_plus_minus', 'opponnent_starter_minutes_played_proportion',
         'opponent_bench_plus_minus']
-    W = 10
+    W = 20
     
     ## Load tables to dataframe
     game_bq = client.query('''
