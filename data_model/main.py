@@ -67,7 +67,7 @@ def create_linear_weighted_moving_average(data,column,W):
 def create_model_data(request):
 
     # Set weights value - Consider making this an input to make this more dynamic
-    W = 10
+    W = 20
 
     # Add to avoid error - cloud functions requires input of request
     request_json = request.get_json()
@@ -91,12 +91,6 @@ def create_model_data(request):
         'opponent_off_rtg', 'starter_minutes_played_proportion',
         'bench_plus_minus', 'opponnent_starter_minutes_played_proportion',
         'opponent_bench_plus_minus']
-<<<<<<< HEAD
-    W = 20
-    
-=======
-
->>>>>>> 2e79adf82a6d4e71f2852cc8f71254d9c32aa78b
     ## Load tables to dataframe
     game_bq = client.query('''
     SELECT game_date, visitor_team_name, visitor_pts, home_team_name, home_pts, games.game_key, 
