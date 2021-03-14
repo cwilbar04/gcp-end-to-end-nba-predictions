@@ -105,4 +105,4 @@ def write_to_bucket(request):
     bucket = client.bucket(bucket_name)
     bucket.blob('static/upcoming.json').upload_from_string(game_date.to_json(), 'text/json')
 
-    return 'Successfully updated bucket with upcoming games'
+    return f'Successfully updated bucket with upcoming games for the next {schedule_days} days'
