@@ -21,28 +21,28 @@ The project is brokwn down in to folders per use-case to simplify navigation and
 
 #### Folder Information  
   
-- [.circleci]([/.circleci])
+- [.circleci](/.circleci)
     - Contains app.yaml folder with all configuration necessary for CI\CD
     - See [Continuous Integration/Continuous Delivery](#continuous-integration/continuous-delivery) section in README for more information
-- [data_model]([/data_model])
+- [data_model](/data_model)
     - Contains files needed for Google Cloud Function nba_model_game_refresh
     - See [nba_model_game_refresh](#function-information)] in function information in README for more information
-- [diagrams]([/diagrams])
+- [diagrams](/diagrams)
     - Contains media displayed in this README such as diagrams from [App.Diagrams.Net](https://app.diagrams.net/) and video demonstrations
-- [get_schedule]([/get_schedule])
+- [get_schedule](/get_schedule)
     - Contains files needed for Google Cloud Function nba_get_upcoming_games
     - See [nba_get_upcoming_games](#function-information)] in function information section in README for more information
-- [project_creation]([/project_creation])
+- [project_creation](/project_creation)
     - Contains Jupyter Notebooks to create your own complete version of this Application after cloning this project
     - See [Create your Own Application](#create-your-own-application) section in README for more information
-- [scraper]([/scraper])
+- [scraper](/scraper)
     - Contains files needed for Google Cloud Function nba_basketball_reference_scraper
     - See [nba_basketball_reference_scraper](#function-information)] in function information in README for more information
-- [tests]([/tests])
+- [tests](/tests)
     - Contains test scripts to use for validation
     - Makefile command "make test" uses pytest to run all tests in this folder
     - See [Continuous Integration/Continuous Delivery](#continuous-integration/continuous-delivery) section in README for more information
-- [webapp]([/webapp])
+- [webapp](/webapp)
     - Contains all files needed for Google App Engine website application
     - See [My App Engine Hosted Website](#my-app-engine-hosted-website) section in README for more information
 
