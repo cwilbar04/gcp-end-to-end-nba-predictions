@@ -2,6 +2,8 @@
 
 [![CircleCI CI/CD Pipeline](https://circleci.com/gh/cwilbar04/nba-predictions.svg?style=shield)](https://circleci.com/gh/cwilbar04/nba-predictions)
 
+<iframe src="https://northwestern.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=32afd727-cf3b-42c9-a087-aceb016a8962&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all" height="405" width="720" style="border: 1px solid #464646;" allowfullscreen allow="autoplay"></iframe>
+
 ## Overview
 
 This repository created by Christopher Wilbar initially for submission as a Final Project in my Northwestern Unviversity Master of Science in Data Science class: MSDS 434 Analytics Application Engineering.
