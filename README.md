@@ -21,28 +21,28 @@ The project is brokwn down in to folders per use-case to simplify navigation and
 
 #### Folder Information  
   
-- **[.circleci]**([\.circleci])
+- [.circleci]([\.circleci])
     - Contains app.yaml folder with all configuration necessary for CI\CD
     - See [Continuous Integration/Continuous Delivery](#continuous-integration/continuous-delivery) section in README for more information
-- **[data_model]**([\data_model])
+- [data_model]([\data_model])
     - Contains files needed for Google Cloud Function nba_model_game_refresh
     - See [nba_model_game_refresh](#function-information)] in function information in README for more information
-- **[diagrams]**([\diagrams])
+- [diagrams]([\diagrams])
     - Contains media displayed in this README such as diagrams from [App.Diagrams.Net](https://app.diagrams.net/) and video demonstrations
-- **[get_schedule]**([\get_schedule])
+- [get_schedule]([\get_schedule])
     - Contains files needed for Google Cloud Function nba_get_upcoming_games
     - See [nba_get_upcoming_games](#function-information)] in function information section in README for more information
-- **[project_creation]**([\project_creation])
+- [project_creation]([\project_creation])
     - Contains Jupyter Notebooks to create your own complete version of this Application after cloning this project
     - See [Create your Own Application](#create-your-own-application) section in README for more information
-- **[scraper]**([\scraper])
+- [scraper]([\scraper])
     - Contains files needed for Google Cloud Function nba_basketball_reference_scraper
     - See [nba_basketball_reference_scraper](#function-information)] in function information in README for more information
-- **[tests]**([\tests])
+- [tests]([\tests])
     - Contains test scripts to use for validation
     - Makefile command "make test" uses pytest to run all tests in this folder
     - See [Continuous Integration/Continuous Delivery](#continuous-integration/continuous-delivery) section in README for more information
-- **[webapp]**([\webapp])
+- [webapp]([\webapp])
     - Contains all files needed for Google App Engine website application
     - See [My App Engine Hosted Website](#my-app-engine-hosted-website) section in README for more information
 
@@ -86,7 +86,7 @@ Navigating to the "Choose Teams" page displays a form for the end user to choose
 
 When you choose "Submit" on the "Choose Teams" page a "POST" request is sent that uses the form data as an input in to the predicted_pointspread function in the [model.py](/webapp/model.py) script. This function gets the list of features for the selected model using the ML.FEATURE_INFO function passed as a query using a BigQuery Client. It also gets the fields stored in the Firestore document for both the Home Team and Away Team selction. The function then has logic to get the predicted spread by dynamically creating a BigQuery statement using the ML.PREDICT function to the Model submitted on the form and passing the values from Firestore for each team for all of the features that are included in the chosen Model. The result is then interpreted as a win/loss for the home team and passed as a readable statment to display to the end user. Future enhancments will seek to include more information than just the predicted point spread to get a better understanding of the confidence of the prediction.
 
-**Note:** the current models have relatively poor performance (around 10 mean absolute error) due to the complexity of the point spread prediction. These predictions are intended solely to demonstrate the capabilites of GCP and should not be used to make any actual bets.
+**Note:** The current models have relatively poor performance (around 10 mean absolute error) due to the complexity of the point spread prediction. These predictions are intended solely to demonstrate the capabilites of GCP and should not be used to make any actual bets.
 
 When you navigate to the "Upcoming Games" page, app engine reaches out the default App Engine Cloud Storage bucket to get the static\upcoming.json file written by the nba_get_upcoming_games function (see information on the [nba_model_game_refresh](#function-information) below for more info). This data contains the date, time, and home/away team for all games in the next 14 days and is displayed to the end user. Future enhancements will provide a more "beautiful" display and allow the user to choose any game in the list and generate a prediction by calling the "POST" method to the /ChooseTeams route with the teams selected, ideally letting the user choose which model to use.
 
