@@ -1,43 +1,41 @@
-# nba_predictions
+# NBA Predictions
+
 [![CircleCI CI/CD Pipeline](https://circleci.com/gh/cwilbar04/nba-predictions.svg?style=shield)](https://circleci.com/gh/cwilbar04/nba-predictions)
 
+## Overview
 
-Cloud-native analytics application that is hosted on the Google Cloud Platform used to predict NBA scores in head to head match-ups.
+Cloud-native analytics application that is hosted on the Google Cloud Platform used to predict NBA point srpread in head to head match ups.
 
+This project demonstrates building a completely serverless analytics application on Google Cloud Platform.
+
+## My App Engine Hosted Website
 https://nba-predictions-prod.uc.r.appspot.com/
 
-Account that runs Google Cloud Function must have: 
-  - Project - Editor 
-  - BigQuery Data Editor 
-  - Cloud Run Service Agent
-  - BigQuery Edit permissions
 
-Need deployer service account set up with JSON saved as GCLOUD_SERVICE_KEY in CircleCI with following permissions:
-  - App Engine Deployer
-  - App Engine Service Admin
-  - Cloud Functions Developer
-  - Service Account User
-  - Storage Object Admin
-  - Cloud Build Service Account
+## Create your Own Application
+To create your own application clone this repository to a local file path.
 
-Need to enable the following Google Cloud APIs:
-  - App Engine Admin API
-  - BigQuery API
-  - Cloud Build API
-  - Cloud Functions API
-  - Cloud Logging API
-  - Cloud Monitoring API
-  - Cloud Resource Manager API
-  - Cloud Scheduler API
-  - Compute Engine API
+Open scripting environment.
+
+Create a [python virtual environment](https://docs.python.org/3/tutorial/venv.html).
+
+Run "make install" to install all required packages. (See [best answer on StackOverflow](https://stackoverflow.com/questions/32127524/how-to-install-and-use-make-in-windows) for installing Make on Windows)
+
+Launch jupyter notebook server and open the "Project Creation Workbook" in the project_creation folder ([link]())
+
+Complete pre-requisites and follow all steps to create everything you need to host your own web page!
+
+
+## Data Ingestion
+
+
+## Continuous Integration/Continuous Delivery
 
 CircleCI needs following variables defined
 - CLOUD_REPO	
 - GCLOUD_PROJECT_ID	
 - GCLOUD_SERVICE_KEY
 
-Basketball Data Loaded from BasketballReference.com:
-Sports Reference LLC. Basketball-Reference.com - Basketball Statistics and History. https://www.basketball-reference.com/.
 
 CD set up conditionally based on folder pushes
   - NOTE: This only works if push to folder path, not on MERGE commands
@@ -45,80 +43,56 @@ CD set up conditionally based on folder pushes
   - Conditionally deploys when push in named file path in the deploy job in the .circleci\app.yaml setup
   - Only deploys if initial test (lint) phase passes
 
-Create Bigquery View to identify games that need to be loaded to the model_game table with following code: 
- 
-```SQL
-CREATE OR REPLACE VIEW nba.games_to_load_to_model AS
 
-WITH model_load_games as (SELECT 
-distinct left(game_key,length(game_key)-1) as game_key 
-FROM `nba.model_game`
-)
+## Benchmark Testing
 
-    SELECT distinct order_of_games_per_team.game_key, 
-    CASE WHEN model_load_games.game_key is NULL THEN 1 ELSE 0 END as NEEDS_TO_LOAD_TO_MODEL
-    FROM (
-            SELECT team, game_key, row_number() OVER (PARTITION BY team ORDER BY game_date desc) as game_number
-            FROM (
-                    SELECT
-                        home_team_name as team, game_date, game_key
-                    FROM  `nba.raw_basketballreference_game`
-    
-                    UNION DISTINCT 
+To perform benchmark testing using apache beam run the following commands on Google Cloud Shell.
+Check out this [website](https://www.datadoghq.com/blog/apachebench/) for more info on interpreting results.
 
-                    SELECT
-                        visitor_team_name as team, game_date, game_key
-                    FROM  `nba.raw_basketballreference_game`
+Download and activate apache beam
+```cmd
+sudo apt install apache2
+sudo service apache2 start
+```
 
-                 ) games_per_team
+Test the home page - replace url with your own url
+```cmd
+ab -n 100 -c 10 https://nba-predictions-prod.uc.r.appspot.com/
+```
 
-            )order_of_games_per_team
-            
-    LEFT JOIN model_load_games ON model_load_games.game_key = order_of_games_per_team.game_key
-    WHERE 
-        game_number <= 11
-        and team in (
-                    SELECT 
-                        distinct home_team_name as team_to_load
-                    FROM `nba.raw_basketballreference_game`
-                    WHERE 
-                    game_date >= (SELECT date_sub(max(game_date), INTERVAL 1 YEAR) FROM `nba.raw_basketballreference_game` )
-                    and game_key not in (SELECT game_key FROM model_load_games)
+Test the Upcoming Games page
+```cmd
+ab -n 100 -c 10 https://nba-predictions-prod.uc.r.appspot.com/UpcomingGames
+```
 
-                    UNION DISTINCT
+Test the Choose Teams page
+```cmd
+ab -n 100 -c 10 https://nba-predictions-prod.uc.r.appspot.com/ChooseTeams
+```
 
-                    SELECT 
-                        distinct visitor_team_name as team_to_load
-                    FROM `nba.raw_basketballreference_game`
-                    WHERE 
-                    game_date >= (SELECT date_sub(max(game_date), INTERVAL 1 YEAR) FROM `nba.raw_basketballreference_game`)
-                    and game_key not in (SELECT game_key FROM model_load_games)              
-                    ) 
-``` 
- 
-Create static training data by executing the following query in the big query console (or progmatically using python): 
+Create file to test Choose Teams POST method (prediction results)
+```cmd
+cat > post_test.txt << EOF
+--1234567890
+Content-Disposition: form-data; name="AwayTeam"
 
-```SQL
-EXECUTE IMMEDIATE CONCAT('CREATE OR REPLACE TABLE `nba.model_training_data_', FORMAT_DATE('%Y%m%d', CURRENT_DATE())
-    ,'` AS SELECT game_key, spread, season,game_date,is_home_team,incoming_is_win_streak,incoming_wma_10_pace',
-    ',incoming_wma_10_efg_pct,incoming_wma_10_tov_pct,incoming_wma_10_ft_rate,incoming_wma_10_off_rtg,incoming_wma_10_opponent_efg_pct',
-    ',incoming_wma_10_opponent_tov_pct,incoming_wma_10_opponent_ft_rate,incoming_wma_10_opponent_off_rtg',
-    ',incoming_wma_10_starter_minutes_played_proportion,incoming_wma_10_bench_plus_minus,incoming_wma_10_opponnent_starter_minutes_played_proportion',
-    ',incoming_wma_10_opponent_bench_plus_minus FROM `nba.model_game` ');
-``` 
- 
-Create AutoML Regression Model by running following code in big query console (or programatically using python): 
+Milwaukee Bucks
+--1234567890
+Content-Disposition: form-data; name="HomeTeam"
 
-```SQL
-CREATE OR REPLACE MODEL nba.automl_regression
-  OPTIONS(model_type='AUTOML_REGRESSOR', BUDGET_HOURS = 1,
-  OPTIMIZATION_OBJECTIVE = 'MINIMIZE_MAE',  input_label_cols=['spread'])
-AS SELECT spread, is_home_team,incoming_is_win_streak,incoming_wma_10_pace
-    ,incoming_wma_10_efg_pct,incoming_wma_10_tov_pct,incoming_wma_10_ft_rate,incoming_wma_10_off_rtg
-    ,incoming_wma_10_opponent_efg_pct,incoming_wma_10_opponent_tov_pct,incoming_wma_10_opponent_ft_rate
-    ,incoming_wma_10_opponent_off_rtg,incoming_wma_10_starter_minutes_played_proportion
-    ,incoming_wma_10_bench_plus_minus,incoming_wma_10_opponnent_starter_minutes_played_proportion
-    ,incoming_wma_10_opponent_bench_plus_minus FROM `nba.model_training_data_20210228`;
-``` 
+Chicago Bulls
+--1234567890
+Content-Disposition: form-data; name="Model"
+
+baseline_linear_model
+--1234567890--
+EOF
+```
+
+Test post results using created file with form data
+```cmd
+ab -n 100 -c 10 -p ./post_test.txt -T 'multipart/form-data; boundary=1234567890' https://nba-predictions-prod.uc.r.appspot.com/ChooseTeams
+```
+
  
 
