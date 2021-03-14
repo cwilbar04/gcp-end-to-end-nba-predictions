@@ -4,7 +4,7 @@ from google.cloud import bigquery
 from google.cloud import firestore
 import os
 
-## Insert initial setup in entry point function: create_model_data
+## Insert initial setup in entry point function below: create_model_data 
 
 def convert_to_seconds(x):
     sp = int(x.split(':')[0]) * 60 + int(x.split(':')[1])
@@ -71,8 +71,7 @@ def create_model_data(request):
 
     # Add to avoid error - cloud functions requires input of request
     request_json = request.get_json()
-    if request_json:
-        
+    if request_json:  
         print("Payload ignored. This function does not use a payload")
     
     
