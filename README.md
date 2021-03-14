@@ -28,6 +28,7 @@ Complete pre-requisites and follow all steps to create everything you need to ho
 
 ## Data Ingestion
 
+<img src="/diagrams/Data Ingestion.png" alt="Data Ingestion Architecture Diagram"/>
 
 ## Continuous Integration/Continuous Delivery
 
@@ -43,6 +44,7 @@ CD set up conditionally based on folder pushes
   - Conditionally deploys when push in named file path in the deploy job in the .circleci\app.yaml setup
   - Only deploys if initial test (lint) phase passes
 
+<img src="/diagrams/CI_CD Diagram.png" alt="CI\CD Architecture Diagram"/>
 
 ## Benchmark Testing
 
