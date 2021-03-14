@@ -9,12 +9,31 @@ Cloud-native analytics application that is hosted on the Google Cloud Platform u
 This project demonstrates building a completely serverless analytics application on Google Cloud Platform.
 
 
-
-
-
 ## My App Engine Hosted Website
+
+#### Web Link Home Page
+  
 https://nba-predictions-prod.uc.r.appspot.com/
 
+#### Web Page Routes Diagram  
+  
+<img src="/diagrams/Web Page Diagram.png" alt="Web Page Diagram"/>
+
+The code for the webpage used in this project can be found in the [webapp](/webapp) folder.
+
+The primary functionality of the webapp is definied in main.py and uses the Flask framework.
+
+On the top of all pages is a header that allows you to navigate to the different routes available and also a link to this github repository in the top right.
+
+The home page serves as a landing page that shows you the current options available on the web page. As of 3/14/21 these are to navigate to the "Choose Teams" page to get ML Prediction results or navigate to the "Upcoming Games" page to view upcoming games in the next 14 days.
+
+Navigating to the "Choose Teams" page displays a form for the end user to choose a Home Team and an Away Team along with a specific Model to use. The Team names you can select are the list of document names in the team_model_data collection (see information on the [nba_model_game_refresh](#function-information) below for more info). This ensures that there will be appropriate data for the team you selected because the PREDICT function uses the data stored in these documents. The Model list is created by calling the model_list function in the google-bigquery python function and displays the name of all models that exist in the NBA dataset. Future enhancements will replace the display name with a "friendly name" and display more information about the specifics of the model.
+
+When you choose "Submit" on the "Choose Teams" page a "POST" request is sent that uses the form data as an input in to the predicted_pointspread function in the [model.py](/webapp/model.py) script. This function gets the list of features for the selected model using the ML.FEATURE_INFO function passed as a query using a BigQuery Client. It also gets the fields stored in the Firestore document for both the Home Team and Away Team selction. The function then has logic to get the predicted spread by dynamically creating a BigQuery statement using the ML.PREDICT function to the Model submitted on the form and passing the values from Firestore for each team for all of the features that are included in the chosen Model. The result is then interpreted as a win/loss for the home team and passed as a readable statment to display to the end user. Future enhancments will seek to include more information than just the predicted point spread to get a better understanding of the confidence of the prediction.
+
+**Note:** the current models have relatively poor performance (around 10 mean absolute error) due to the complexity of the point spread prediction. These predictions are intended solely to demonstrate the capabilites of GCP and should not be used to make any actual bets.
+
+When you navigate to the "Upcoming Games" page, app engine reaches out the default App Engine Cloud Storage bucket to get the static\upcoming.json file written by the nba_get_upcoming_games function (see information on the [nba_model_game_refresh](#function-information) below for more info). This data contains the date, time, and home/away team for all games in the next 14 days and is displayed to the end user. Future enhancements will provide a more "beautiful" display and allow the user to choose any game in the list and generate a prediction by calling the "POST" method to the /ChooseTeams route with the teams selected, ideally letting the user choose which model to use.
 
 ## Create your Own Application
 Create and activate a [python virtual environment](https://docs.python.org/3/tutorial/venv.html).
@@ -23,22 +42,20 @@ To create your own application clone this repository to a local file path and na
 
 Run "make install" to install all required packages. (See [best answer on StackOverflow](https://stackoverflow.com/questions/32127524/how-to-install-and-use-make-in-windows) for installing Make on Windows)
 
-Launch jupyter notebook server and open the "Project Creation Workbook" in the project_creation folder ([link]())
+Launch jupyter notebook server and open the ["Project Creation Workbook"]((/project_creation/Project Creation Workbook.ipynb)) in the project_creation folder.
 
 Complete pre-requisites and follow all steps to create everything you need to host your own web page!
 
-## Model Building
-
-All ML Models in this project were created directly in the Google Cloud Console.
-
 ## Data Ingestion
 
+#### Data Ingestion Diagram  
+  
 <img src="/diagrams/Data Ingestion Diagram.png" alt="Data Ingestion Architecture Diagram"/>
 
 All data in this project is web scraped from [Basketball-Reference](https://www.basketball-reference.com/) using python's BeautifulSoup package. There are two Google Cloud Functions that scrape data directly from this website: nba_basketball_reference_scraper and nba_get_upcoming_games. A third Google Cloud function, nba_model_game_refresh, connects to create a "model" table that combines and enriches the data in the raw tables loaded by the nba_basketball_reference_scraper function.
 
 #### Function Information:
-**
+
 - **nba_basketball_reference_scraper**
     - The code for this function is found in the [scraper](/scraper) folder and this folder is deployed to Google Cloud Functions using gcloud function deploy. The python script is in main.py and the packages required are in the requirements.txt file. There is also  very basic init file with a version number and a .gcloudignore file to not upload the init file to Google Cloud Functions.
     - This python function takes a Start Date and End Date and loops through the Schedule&Results page for each Year/Month in the time period ([Example]https://www.basketball-reference.com/leagues/NBA_2021_games-march.htmlBox) and gets the list of box score pages to scrape. The scraper then loops through each of these box score pages ([Example](https://www.basketball-reference.com/boxscores/202103010ORL.html)) and scrapes data includes game date, home team, away team, line score, and Basketball Reference's ["Four Factors"](https://www.basketball-reference.com/about/factors.html) metrics in to a raw_basketballreference_game table in BigQuery. Next the "Basic Box Score" stats for the players on both teams are scraped in to a raw_basketballreference_playerbox table in BigQuery.
@@ -53,19 +70,29 @@ All data in this project is web scraped from [Basketball-Reference](https://www.
     - This python function takes "ScheduleDays" as an input and loops the Schedule&Results page for each Year/Month ([Example]https://www.basketball-reference.com/leagues/NBA_2021_games-march.htmlBox) in the time period starting from the date the function is executed until "ScheduleDays" later. The scraper gets the game date and home/away team and creates a dictionary which is stored as an upcoming.json file which the function loads to the default app engine storage bucket.
     - The "ScheduleDays" parameter can be passed as a JSON payload in a PUT Request with format "{"ScheduleDays":"Number"}
     - If no "ScheduleDays" are passed, the function defaults to 14 days
-    - Cloud scheduler does not pass "ScheduleDays" so there are always 14 days worth of games uploaded to the storage bucket to later be displayed on the web page.
+    - Cloud Scheduler does not pass "ScheduleDays" so there are always 14 days worth of games uploaded to the storage bucket to later be displayed on the web page.
 
 - **nba_model_game_refresh**
     - The code for this function is found in the [data_model](/data_model) folder and this folder is deployed to Google Cloud Functions using gcloud function deploy. The python script is in main.py and the packages required are in the requirements.txt file. There is also  very basic init file with a version number and a .gcloudignore file to not upload the init file to Google Cloud Functions.
-    - This python function transforms the raw_basketballreference_game and raw_basketballreference_playerbox table by combining them and adding additional useful metrics such as incoming rest days and bench plus minus and loads the data in to the model_game table.
-  
+    - This python function transforms the raw_basketballreference_game and raw_basketballreference_playerbox table by combining them and adding additional useful metrics such as incoming rest days and bench plus minus and loads the data in to the model_game table. The data is converted to team vs. opponent data with is_home_team as a field to indicate the home team, effectively doubling the data size. Additionally, all metrics have an incoming weighted moving average column added that is currently linearly weighted using a lookback value of W=20, which can be modified directly in the code. This allows the ML models to be trained on data that is available at the time of prediction.
+    - This function also relies on the BigQuery view games_to_load_to_model to identify which games have been loaded in to the raw_basketballreference_game table but have not been loaded in to the model_game table and only loads the new data to model_game table. See Step 9 - Create BigQuery View in the [Project Creation Workbook](/project_creation/Project Creation Workbook.ipynb) for view DDL.
+    - This function also loads a separate document with the most recent row per team to the team_model_data collection in Cloud Firestore in Native Mode. This data is used by the web page when a Home Team and Away team are chosen for score prediction.
+    - This function ignores any input parameters.
+    - Cloud Scheduler runs this every day to make sure this is always up to date.
 
 
+## Model Building
 
+Before model training, a view with time filter is created for transparency in to what data was used by any given model. See Step 12 - Create Static Model Training Data View in the [Project Creation Workbook](/project_creation/Project Creation Workbook.ipynb) for command to create this view. This uses the "EXECUTE IMMEDIATE" statement to create the View name dynamically using the date of execution.
 
+All ML Models in this project were created directly in the Google Cloud Console using the CREATE MODEL statement. See Step 13 - Create Baseline Linear Model using View in the [Project Creation Workbook](/project_creation/Project Creation Workbook.ipynb) for the exact syntax used to create the Baseline Linear Model.
+
+Currently, prediction results are returned to the end user by dynamically building a BigQuery query that utilizes the ML.PREDICT function to return results in real-time using a BigQuery Client (see [model.py](/webapp/model.py) for the python code). For small scale use this is easy to build/maintain and cost-effective. In order to scale to much more usage the model would need to be exported and hosted elsewhere. This is a possible future enhancment. 
 
 ## Continuous Integration/Continuous Delivery
 
+#### CI/CD Diagram  
+  
 <img src="/diagrams/CI_CD Diagram.png" alt="CI\CD Architecture Diagram"/>
 
 For CI/CD with this project I choose to use [CiricleCI](https://circleci.com/)
@@ -115,10 +142,6 @@ Continuous Delivery (CD) is set up to conditionally deploy based on pushes (upda
   - Need to set up anything that needs to be deployed in its own file path
   - Conditionally deploys when push in named file path in the deploy job in the .circleci\app.yaml setup
   - Only deploys if initial pylint tests phase pass.
-
-See the diagram below for the full CI/CD pipeline setup:
-
-
 
 ## Benchmark Testing
 
