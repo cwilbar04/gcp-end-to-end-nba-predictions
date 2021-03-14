@@ -2,7 +2,6 @@ notebook
 pytest
 pylint
 pytest-cov
-click
 beautifulsoup4
 flask
 pandas

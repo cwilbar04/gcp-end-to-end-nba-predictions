@@ -4,9 +4,64 @@
 
 ## Overview
 
-Cloud-native analytics application that is hosted on the Google Cloud Platform used to predict NBA point srpread in head to head match ups.
+This repository created by Christopher Wilbar initially for submission as a Final Project in my Northwestern Unviversity Master of Science in Data Science class: MSDS 434 Analytics Application Engineering.
 
-This project demonstrates building a completely serverless analytics application on Google Cloud Platform.
+This project demonstrated building a serverless Cloud-native analytics application that is hosted on the Google Cloud Platform used to predict NBA point srpread in head to head match ups. This project also demonstrates using CircleCI for Continuous Integration and Continuous Deployment strategies. Please read through the README document for detailed information regarding each part of the project.
+
+The following GCP products are used:
+- Google Cloud Functions
+- Google Cloud Scheduler
+- Google BigQuery
+- Google App Engine
+- Google Cloud Storage
+- Google IAM&Admin
+- Google Firestore
+
+The project is brokwn down in to folders per use-case to simplify navigation and deployment.
+
+#### Folder Information  
+  
+- **[.circleci]**([\.circleci])
+    - Contains app.yaml folder with all configuration necessary for CI\CD
+    - See [Continuous Integration/Continuous Delivery](#continuous-integration/continuous-delivery) section in README for more information
+- **[data_model]**([\data_model])
+    - Contains files needed for Google Cloud Function nba_model_game_refresh
+    - See [nba_model_game_refresh](#function-information)] in function information in README for more information
+- **[diagrams]**([\diagrams])
+    - Contains media displayed in this README such as diagrams from [App.Diagrams.Net](https://app.diagrams.net/) and video demonstrations
+- **[get_schedule]**([\get_schedule])
+    - Contains files needed for Google Cloud Function nba_get_upcoming_games
+    - See [nba_get_upcoming_games](#function-information)] in function information section in README for more information
+- **[project_creation]**([\project_creation])
+    - Contains Jupyter Notebooks to create your own complete version of this Application after cloning this project
+    - See [Create your Own Application](#create-your-own-application) section in README for more information
+- **[scraper]**([\scraper])
+    - Contains files needed for Google Cloud Function nba_basketball_reference_scraper
+    - See [nba_basketball_reference_scraper](#function-information)] in function information in README for more information
+- **[tests]**([\tests])
+    - Contains test scripts to use for validation
+    - Makefile command "make test" uses pytest to run all tests in this folder
+    - See [Continuous Integration/Continuous Delivery](#continuous-integration/continuous-delivery) section in README for more information
+- **[webapp]**([\webapp])
+    - Contains all files needed for Google App Engine website application
+    - See [My App Engine Hosted Website](#my-app-engine-hosted-website) section in README for more information
+
+Included in the top-level directory is:
+- .gcloudignore
+    - List of files, folders, and file types to not deploy to google cloud when using the Google Cloud SDK for deployment
+    - Also contained in each of the Function and Web App directories
+- .gitignore
+    - List of files, folders, and file types to not upload to Github orgin branches
+- LICENSE
+    - MIT License for unrestricted use
+- Makefile
+    - Use "make" commands to make common, repeatble commands easier to execute
+- README.md
+    - This document
+- requirements.txt
+    - File containing all python packages used throughout this repository
+    - Run make install to download all of these requirements before interacting with any python script or notebook
+    - Also contained in each of the Function and Web App directories for the specific libraries required for each function/web app
 
 
 ## My App Engine Hosted Website
@@ -27,7 +82,7 @@ On the top of all pages is a header that allows you to navigate to the different
 
 The home page serves as a landing page that shows you the current options available on the web page. As of 3/14/21 these are to navigate to the "Choose Teams" page to get ML Prediction results or navigate to the "Upcoming Games" page to view upcoming games in the next 14 days.
 
-Navigating to the "Choose Teams" page displays a form for the end user to choose a Home Team and an Away Team along with a specific Model to use. The Team names you can select are the list of document names in the team_model_data collection (see information on the [nba_model_game_refresh](#function-information) below for more info). This ensures that there will be appropriate data for the team you selected because the PREDICT function uses the data stored in these documents. The Model list is created by calling the model_list function in the google-bigquery python function and displays the name of all models that exist in the NBA dataset. Future enhancements will replace the display name with a "friendly name" and display more information about the specifics of the model.
+Navigating to the "Choose Teams" page displays a form for the end user to choose a Home Team and an Away Team along with a specific Model to use. The Team names you can select are the list of document names in the team_model_data collection (see information on the [nba_model_game_refresh](#function-information) function below for more info). This ensures that there will be appropriate data for the team you selected because the PREDICT function uses the data stored in these documents. The Model list is created by calling the model_list function in the google-bigquery python function and displays the name of all models that exist in the NBA dataset. Future enhancements will replace the display name with a "friendly name" and display more information about the specifics of the model.
 
 When you choose "Submit" on the "Choose Teams" page a "POST" request is sent that uses the form data as an input in to the predicted_pointspread function in the [model.py](/webapp/model.py) script. This function gets the list of features for the selected model using the ML.FEATURE_INFO function passed as a query using a BigQuery Client. It also gets the fields stored in the Firestore document for both the Home Team and Away Team selction. The function then has logic to get the predicted spread by dynamically creating a BigQuery statement using the ML.PREDICT function to the Model submitted on the form and passing the values from Firestore for each team for all of the features that are included in the chosen Model. The result is then interpreted as a win/loss for the home team and passed as a readable statment to display to the end user. Future enhancments will seek to include more information than just the predicted point spread to get a better understanding of the confidence of the prediction.
 
@@ -43,6 +98,10 @@ To create your own application clone this repository to a local file path and na
 Run "make install" to install all required packages. (See [best answer on StackOverflow](https://stackoverflow.com/questions/32127524/how-to-install-and-use-make-in-windows) for installing Make on Windows)
 
 Launch jupyter notebook server and open the ["Project Creation Workbook"]((/project_creation/Project Creation Workbook.ipynb)) in the project_creation folder.
+
+```cmd
+@cd project_creation; PYTHONPATH=".." jupyter notebook Project Creation Workbook.ipynb
+```
 
 Complete pre-requisites and follow all steps to create everything you need to host your own web page!
 
