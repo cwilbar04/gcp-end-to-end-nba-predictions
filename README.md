@@ -101,7 +101,7 @@ To create your own application clone this repository to a local file path and na
 
 Run "make install" to install all required packages. (See [best answer on StackOverflow](https://stackoverflow.com/questions/32127524/how-to-install-and-use-make-in-windows) for installing Make on Windows)
 
-Launch jupyter notebook server and open the ["Project Creation Workbook"](/project_creation/Project Creation Workbook.ipynb) in the project_creation folder. See my own [walkthrough video](https://northwestern.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=c8fc3c75-bff0-43e4-9845-acec0025d309&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all" height="405" width="720" style="border: 1px solid #464646;" allowfullscreen allow="autoplay")
+Launch jupyter notebook server and open the ["Project Creation Workbook"](/project_creation/Project Creation Workbook.ipynb) in the project_creation folder. See my own [walkthrough video](https://northwestern.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=c8fc3c75-bff0-43e4-9845-acec0025d309&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all)
 
 ```cmd
 cd project_creation; jupyter notebook "Project Creation Workbook.ipynb" 
@@ -130,7 +130,7 @@ All data in this project is web scraped from [Basketball-Reference](https://www.
 
 - **nba_get_upcoming_games**
     - The code for this function is found in the [get_schedule](/get_schedule) folder and this folder is deployed to Google Cloud Functions using gcloud function deploy. The python script is in main.py and the packages required are in the requirements.txt file. There is also  very basic init file with a version number and a .gcloudignore file to not upload the init file to Google Cloud Functions.
-    - This python function takes "ScheduleDays" as an input and loops the Schedule&Results page for each Year/Month ([Example]https://www.basketball-reference.com/leagues/NBA_2021_games-march.htmlBox) in the time period starting from the date the function is executed until "ScheduleDays" later. The scraper gets the game date and home/away team and creates a dictionary which is stored as an upcoming.json file which the function loads to the default app engine storage bucket.
+    - This python function takes "ScheduleDays" as an input and loops the Schedule&Results page for each Year/Month ([Example](https://www.basketball-reference.com/leagues/NBA_2021_games-march.html)) in the time period starting from the date the function is executed until "ScheduleDays" later. The scraper gets the game date and home/away team and creates a dictionary which is stored as an upcoming.json file which the function loads to the default app engine storage bucket.
     - The "ScheduleDays" parameter can be passed as a JSON payload in a PUT Request with format "{"ScheduleDays":"Number"}
     - If no "ScheduleDays" are passed, the function defaults to 14 days
     - Cloud Scheduler does not pass "ScheduleDays" so there are always 14 days worth of games uploaded to the storage bucket to later be displayed on the web page.
