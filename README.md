@@ -28,7 +28,7 @@ The project is brokwn down in to folders per use-case to simplify navigation and
     - Contains files needed for Google Cloud Function nba_model_game_refresh
     - See [nba_model_game_refresh](#function-information)] in function information in README for more information
 - [diagrams](/diagrams)
-    - Contains media displayed in this README such as diagrams from [App.Diagrams.Net](https://app.diagrams.net/) and video demonstrations
+    - Contains media displayed in this README such as diagrams created in [Draw.io](https://app.diagrams.net/)
 - [get_schedule](/get_schedule)
     - Contains files needed for Google Cloud Function nba_get_upcoming_games
     - See [nba_get_upcoming_games](#function-information)] in function information section in README for more information
@@ -94,13 +94,14 @@ When you navigate to the "Upcoming Games" page, app engine reaches out the defau
 
 
 ## Create your Own Application
+
 Create and activate a [python virtual environment](https://docs.python.org/3/tutorial/venv.html).
 
 To create your own application clone this repository to a local file path and navigate to nba-predictions folder.
 
 Run "make install" to install all required packages. (See [best answer on StackOverflow](https://stackoverflow.com/questions/32127524/how-to-install-and-use-make-in-windows) for installing Make on Windows)
 
-Launch jupyter notebook server and open the ["Project Creation Workbook"](/project_creation/Project Creation Workbook.ipynb) in the project_creation folder.
+Launch jupyter notebook server and open the ["Project Creation Workbook"](/project_creation/Project Creation Workbook.ipynb) in the project_creation folder. See my own [walkthrough video](https://northwestern.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=c8fc3c75-bff0-43e4-9845-acec0025d309&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all" height="405" width="720" style="border: 1px solid #464646;" allowfullscreen allow="autoplay")
 
 ```cmd
 cd project_creation; jupyter notebook "Project Creation Workbook.ipynb" 
@@ -157,6 +158,8 @@ Currently, prediction results are returned to the end user by dynamically buildi
   
 <img src="/diagrams/CI_CD Diagram.png" alt="CI\CD Architecture Diagram"/>
 
+[CI/CD Walkthrough Video](https://northwestern.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=c8a90367-824e-4051-90c4-aceb0182983d&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all)
+
 For CI/CD with this project I choose to use [CiricleCI](https://circleci.com/)
 
 See [Getting Started](https://circleci.com/docs/2.0/getting-started/) on how to create an account and link it to your Github Repository
@@ -210,10 +213,9 @@ Continuous Delivery (CD) is set up to conditionally deploy based on pushes (upda
 To perform benchmark testing using apache beam run the following commands on Google Cloud Shell.
 Check out this [website](https://www.datadoghq.com/blog/apachebench/) for more info on interpreting results.
 
-Download and activate apache beam
+Install apache beam
 ```cmd
-sudo apt install apache2
-sudo service apache2 start
+sudo apt install --assume-yes apache2
 ```
 
 Test the home page - replace url with your own url
