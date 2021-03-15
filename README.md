@@ -157,6 +157,8 @@ Currently, prediction results are returned to the end user by dynamically buildi
   
 <img src="/diagrams/CI_CD Diagram.png" alt="CI\CD Architecture Diagram"/>
 
+[CI/CD Walkthrough Video](https://northwestern.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=c8a90367-824e-4051-90c4-aceb0182983d&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all)
+
 For CI/CD with this project I choose to use [CiricleCI](https://circleci.com/)
 
 See [Getting Started](https://circleci.com/docs/2.0/getting-started/) on how to create an account and link it to your Github Repository
@@ -210,10 +212,9 @@ Continuous Delivery (CD) is set up to conditionally deploy based on pushes (upda
 To perform benchmark testing using apache beam run the following commands on Google Cloud Shell.
 Check out this [website](https://www.datadoghq.com/blog/apachebench/) for more info on interpreting results.
 
-Download and activate apache beam
+Install apache beam
 ```cmd
-sudo apt install apache2
-sudo service apache2 start
+sudo apt install --assume-yes apache2
 ```
 
 Test the home page - replace url with your own url
