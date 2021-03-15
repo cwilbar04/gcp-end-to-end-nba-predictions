@@ -28,7 +28,7 @@ The project is brokwn down in to folders per use-case to simplify navigation and
     - Contains files needed for Google Cloud Function nba_model_game_refresh
     - See [nba_model_game_refresh](#function-information)] in function information in README for more information
 - [diagrams](/diagrams)
-    - Contains media displayed in this README such as diagrams from [App.Diagrams.Net](https://app.diagrams.net/) and video demonstrations
+    - Contains media displayed in this README such as diagrams created in [Draw.io](https://app.diagrams.net/)
 - [get_schedule](/get_schedule)
     - Contains files needed for Google Cloud Function nba_get_upcoming_games
     - See [nba_get_upcoming_games](#function-information)] in function information section in README for more information
@@ -94,13 +94,14 @@ When you navigate to the "Upcoming Games" page, app engine reaches out the defau
 
 
 ## Create your Own Application
+
 Create and activate a [python virtual environment](https://docs.python.org/3/tutorial/venv.html).
 
 To create your own application clone this repository to a local file path and navigate to nba-predictions folder.
 
 Run "make install" to install all required packages. (See [best answer on StackOverflow](https://stackoverflow.com/questions/32127524/how-to-install-and-use-make-in-windows) for installing Make on Windows)
 
-Launch jupyter notebook server and open the ["Project Creation Workbook"](/project_creation/Project Creation Workbook.ipynb) in the project_creation folder.
+Launch jupyter notebook server and open the ["Project Creation Workbook"](/project_creation/Project Creation Workbook.ipynb) in the project_creation folder. See my own [walkthrough video](https://northwestern.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=c8fc3c75-bff0-43e4-9845-acec0025d309&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all" height="405" width="720" style="border: 1px solid #464646;" allowfullscreen allow="autoplay")
 
 ```cmd
 cd project_creation; jupyter notebook "Project Creation Workbook.ipynb" 
