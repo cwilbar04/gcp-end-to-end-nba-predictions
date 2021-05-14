@@ -1,6 +1,6 @@
 # NBA Predictions
 
-[![CircleCI CI/CD Pipeline](https://circleci.com/gh/cwilbar04/nba-predictions.svg?style=shield)](https://circleci.com/gh/cwilbar04/nba-predictions)
+[![CircleCI CI/CD Pipeline](https://circleci.com/gh/cwilbar04/gcp-end-to-end-nba-predictions.svg?style=shield)](https://circleci.com/gh/cwilbar04/gcp-end-to-end-nba-predictions)
 
 ## Overview
 
