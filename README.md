@@ -26,7 +26,7 @@ The project is brokwn down in to folders per use-case to simplify navigation and
     - See [Continuous Integration/Continuous Delivery](#continuous-integration/continuous-delivery) section in README for more information
 - [data_model](/data_model)
     - Contains files needed for Google Cloud Function nba_model_game_refresh
-    - See [nba_model_game_refresh](#function-information)] in function information in README for more information
+    - See [nba_model_game_refresh](#function-information) in function information in README for more information
 - [diagrams](/diagrams)
     - Contains media displayed in this README such as diagrams created in [Draw.io](https://app.diagrams.net/)
 - [get_schedule](/get_schedule)
